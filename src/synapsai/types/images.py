@@ -1,0 +1,98 @@
+"""
+Image generation, editing, and analysis type definitions
+"""
+
+from typing import Optional, Dict, Any, Union, List, Literal
+from pydantic import BaseModel, Field
+from enum import Enum
+
+from .common import APIResponse, Usage
+
+ImageSource = Union[str, bytes]
+
+
+class ImageSize(str, Enum):
+    """Image size options"""
+    SIZE_256x256 = "256x256"
+    SIZE_512x512 = "512x512"
+    SIZE_1024x1024 = "1024x1024"
+    SIZE_1792x1024 = "1792x1024"
+    SIZE_1024x1792 = "1024x1792"
+
+
+class ImageQuality(str, Enum):
+    """Image quality options"""
+    STANDARD = "standard"
+    HD = "hd"
+
+
+class ImageStyle(str, Enum):
+    """Image style options"""
+    VIVID = "vivid"
+    NATURAL = "natural"
+
+
+class ResponseFormat(str, Enum):
+    """Image response format"""
+    URL = "url"
+    B64_JSON = "b64_json"
+
+
+class Image(BaseModel):
+    """Image object"""
+    url: Optional[str] = None
+    b64_json: Optional[str] = None
+    image_bytes: Optional[bytes] = None
+    revised_prompt: Optional[str] = None
+
+class ImageGenerateRequest(BaseModel):
+    """Image generation request"""
+    model: str
+    prompt: str = Field(max_length=4000)
+    n: Optional[int] = Field(default=1, ge=1, le=10)
+    quality: Optional[ImageQuality] = ImageQuality.STANDARD
+    response_format: Optional[ResponseFormat] = ResponseFormat.URL
+    size: Optional[ImageSize] = ImageSize.SIZE_1024x1024
+    style: Optional[ImageStyle] = ImageStyle.VIVID
+
+
+class ImageGenerateResponse(APIResponse):
+    """Image generation response"""
+    object: Literal["list"] = "list"
+    data: List[Image]
+    usage: Optional[Usage] = None
+
+class ImageEditRequest(BaseModel):
+    """Image edit request"""
+    model: str
+    image: ImageSource = Field(description="The image to edit (base64 encoded, URL, or file)")
+    mask: Optional[ImageSource] = Field(default=None, description="Mask image (base64 encoded, URL, or file)")
+    prompt: str = Field(max_length=1000)
+    n: Optional[int] = Field(default=1, ge=1, le=10)
+    size: Optional[ImageSize] = ImageSize.SIZE_1024x1024
+    response_format: Optional[ResponseFormat] = ResponseFormat.URL
+
+class ImageEditResponse(APIResponse):
+    """Image edit response"""
+    object: Literal["list"] = "list"
+    data: List[Image]
+    usage: Optional[Usage] = None
+
+class ImageAnalysisRequest(BaseModel):
+    """Image analysis request (custom endpoint)"""
+    model: str
+    image: ImageSource = Field(description="The image to analyze (base64 encoded, URL, or file)")
+    fields: Optional[List[str]] = Field(
+        default=None,
+        description="Specific fields to extract (e.g., ['objects', 'text', 'colors', 'mood'])"
+    )
+    detail: Optional[Literal["low", "high", "auto"]] = "auto"
+    max_tokens: Optional[int] = Field(default=300, gt=0)
+
+
+class ImageAnalysisResponse(APIResponse):
+    """Image analysis response (custom endpoint)"""
+    object: Literal["list"] = "list"
+    model: str
+    data: List[Dict[str, Any]]
+    usage: Optional[Usage] = None

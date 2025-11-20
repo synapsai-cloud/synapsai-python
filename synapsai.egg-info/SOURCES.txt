@@ -1,0 +1,8 @@
+LICENSE
+README.md
+setup.py
+synapsai.egg-info/PKG-INFO
+synapsai.egg-info/SOURCES.txt
+synapsai.egg-info/dependency_links.txt
+synapsai.egg-info/requires.txt
+synapsai.egg-info/top_level.txt
