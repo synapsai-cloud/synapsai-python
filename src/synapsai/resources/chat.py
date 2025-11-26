@@ -65,7 +65,7 @@ class ChatCompletionsResource:
             **kwargs
         )
 
-        endpoint = "/chat/completions"
+        endpoint = "chat/completions"
         
         if stream:
             return self._stream_completions(endpoint, request_data)
@@ -142,7 +142,7 @@ class AsyncChatCompletionsResource:
             **kwargs
         )
     
-        endpoint = "/chat/completions"
+        endpoint = "chat/completions"
 
         if stream:
             return self._stream_completions(endpoint, request_data)

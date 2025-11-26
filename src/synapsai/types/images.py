@@ -8,8 +8,7 @@ from enum import Enum
 
 from .common import APIResponse, Usage
 
-ImageSource = Union[str, bytes]
-
+ImageSource = Union[str, bytes, List[str], List[bytes]]
 
 class ImageSize(str, Enum):
     """Image size options"""
@@ -55,7 +54,6 @@ class ImageGenerateRequest(BaseModel):
     size: Optional[ImageSize] = ImageSize.SIZE_1024x1024
     style: Optional[ImageStyle] = ImageStyle.VIVID
 
-
 class ImageGenerateResponse(APIResponse):
     """Image generation response"""
     object: Literal["list"] = "list"
@@ -79,7 +77,7 @@ class ImageEditResponse(APIResponse):
     usage: Optional[Usage] = None
 
 class ImageAnalysisRequest(BaseModel):
-    """Image analysis request (custom endpoint)"""
+    """Image analysis request"""
     model: str
     image: ImageSource = Field(description="The image to analyze (base64 encoded, URL, or file)")
     fields: Optional[List[str]] = Field(
@@ -89,9 +87,74 @@ class ImageAnalysisRequest(BaseModel):
     detail: Optional[Literal["low", "high", "auto"]] = "auto"
     max_tokens: Optional[int] = Field(default=300, gt=0)
 
-
 class ImageAnalysisResponse(APIResponse):
-    """Image analysis response (custom endpoint)"""
+    """Image analysis response"""
+    object: Literal["list"] = "list"
+    model: str
+    data: List[Dict[str, Any]]
+    usage: Optional[Usage] = None
+
+class ImageSegmentationRequest(BaseModel):
+    """Image segmentation request"""
+    model: str
+    image: ImageSource = Field(description="The image to analyze (base64 encoded, URL, or file)")
+    subtask: str = 'panoptic'
+    threshold: float = 0.9
+    mask_threshold: float = 0.5
+    overlap_mask_area_threshold: float = 0.5
+
+class ImageSegmentationResponse(APIResponse):
+    """Image segmentation response"""
+    object: Literal["list"] = "list"
+    model: str
+    data: List[Dict[str, Any]]
+    usage: Optional[Usage] = None
+
+class ImageFeatureExtractionRequest(BaseModel):
+    """Image feature extraction request"""
+    model: str
+    images: ImageSource = Field(description="The image to extract features from (base64 encoded, URL, or file)")
+
+class ImageFeatureExtractionResponse(APIResponse):
+    """Image feature extraction response"""
+    object: Literal["list"] = "list"
+    model: str
+    data: List[Dict[str, Any]]
+    usage: Optional[Usage] = None
+
+class ObjectDetectionRequest(BaseModel):
+    """Object detection request"""
+    model: str
+    inputs: ImageSource = Field(description="The image to analyze (base64 encoded, URL, or file)")
+    threshold: float = 0.5
+
+class ObjectDetectionResponse(APIResponse):
+    """Object detection response"""
+    object: Literal["list"] = "list"
+    model: str
+    data: List[Dict[str, Any]]
+    usage: Optional[Usage] = None
+
+class DepthEstimationRequest(BaseModel):
+    """Depth estimation request"""
+    model: str
+    inputs: ImageSource = Field(description="The image to analyze (base64 encoded, URL, or file)")
+    parameters: Optional[Dict] = None
+
+class DepthEstimationResponse(APIResponse):
+    """Depth estimation response"""
+    object: Literal["list"] = "list"
+    model: str
+    data: List[Dict[str, Any]]
+    usage: Optional[Usage] = None
+
+class ImageFeatureExtractionRequest(BaseModel):
+    """Feature extraction request"""
+    model: str
+    images: ImageSource = Field(description="The image to extract features from (base64 encoded, URL, or file)")
+
+class ImageFeatureExtractionResponse(APIResponse):
+    """Feature extraction response"""
     object: Literal["list"] = "list"
     model: str
     data: List[Dict[str, Any]]

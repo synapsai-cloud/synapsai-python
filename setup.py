@@ -9,7 +9,8 @@ setup(
     url="https://github.com/synapsai-cloud/synapsai",
     author="SynapsAI Technologies, Inc.",
     author_email="MaximeChampagne@synapsai.cloud",
-    packages=find_packages(exclude=("tests",)),
+    package_dir={"": "src"},
+    packages=find_packages(where="src"),
     include_package_data=True,
     classifiers=[
         "Programming Language :: Python :: 3",

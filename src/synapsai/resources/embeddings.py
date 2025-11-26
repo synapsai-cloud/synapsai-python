@@ -53,7 +53,7 @@ class EmbeddingsResource:
             **kwargs
         )
         
-        endpoint = "/embeddings"
+        endpoint = "embeddings"
         
         # Make request
         response = self._client._post(endpoint, json_data=request_data)
@@ -135,7 +135,7 @@ class AsyncEmbeddingsResource:
             **kwargs
         )
         
-        endpoint = "/embeddings"
+        endpoint = "embeddings"
         
         # Make request
         response = await self._client._post(endpoint, json_data=request_data)

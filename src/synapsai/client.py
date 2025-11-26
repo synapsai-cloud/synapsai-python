@@ -30,7 +30,7 @@ from .resources import (
     AsyncModelsResource
 )
 from .exceptions import APIError, AuthenticationError
-
+from .utils import build_url
 
 class BaseClient:
     """Base client with common functionality"""
@@ -205,7 +205,7 @@ class SynapsAI(BaseClient):
 
         Retries on network errors, timeouts, and server-side errors (429, 5xx).
         """
-        url = urljoin(self.base_url, endpoint)
+        url = build_url(self.base_url, endpoint)
 
         # prepare kwargs used for every attempt
         base_kwargs = {
@@ -277,13 +277,11 @@ class SynapsAI(BaseClient):
         files: Optional[Dict[str, Any]] = None,
     ) -> httpx.Response:
         """Make a POST request"""
-        url = self.base_url + endpoint
-        return self._request("POST", url, json_data, data, files)
+        return self._request("POST", endpoint, json_data, data, files)
 
     def _get(self, endpoint: str) -> httpx.Response:
         """Make a GET request"""
-        url = self.base_url + endpoint
-        return self._request("GET", url)
+        return self._request("GET", endpoint)
 
     def _stream_response(
         self,
@@ -397,7 +395,7 @@ class AsyncSynapsAI(BaseClient):
         files: Optional[Dict[str, Any]] = None,
     ) -> httpx.Response:
         """Make an async request to the API with retries."""
-        url = urljoin(self.base_url, endpoint)
+        url = build_url(self.base_url, endpoint)
 
         base_kwargs: Dict[str, Any] = {
             "method": method,
@@ -478,7 +476,7 @@ class AsyncSynapsAI(BaseClient):
         The attempt to establish the stream will be retried using the same backoff rules.
         Once the stream is established, streaming errors are raised as-is.
         """
-        url = urljoin(self.base_url, endpoint)
+        url = build_url(self.base_url, endpoint)
 
         base_kwargs = {
             "method": "POST",

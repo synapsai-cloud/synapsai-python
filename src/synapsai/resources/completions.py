@@ -54,7 +54,7 @@ class CompletionsResource:
             **kwargs
         )
         
-        endpoint = "/completions"
+        endpoint = "completions"
         
         if stream:
             return self._stream_completions(endpoint, request_data)
@@ -113,7 +113,7 @@ class AsyncCompletionsResource:
             **kwargs
         )
 
-        endpoint = "/completions"
+        endpoint = "completions"
         
         # Make request
         if stream:

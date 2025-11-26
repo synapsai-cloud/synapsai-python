@@ -47,7 +47,7 @@ class ZeroShotClassificationsResource:
             hypothesis_template=hypothesis_template,
         )
 
-        endpoint = "/classifications/zero-shot/audio"
+        endpoint = "classifications/zero-shot/audio"
         response = self._client._post(endpoint, json_data=request_data)
         return ZeroShotAudioClassificationResponse.model_validate(response.json())
 
@@ -69,7 +69,7 @@ class ZeroShotClassificationsResource:
             multi_label=multi_label,
         )
 
-        endpoint = "/classifications/zero-shot"
+        endpoint = "classifications/zero-shot"
         response = self._client._post(endpoint, json_data=request_data)
         return ZeroShotClassificationResponse.model_validate(response.json())
 
@@ -91,7 +91,7 @@ class ZeroShotClassificationsResource:
             timeout=timeout,
         )
 
-        endpoint = "/classifications/zero-shot/image"
+        endpoint = "classifications/zero-shot/image"
         response = self._client._post(endpoint, json_data=request_data)
         return ZeroShotImageClassificationResponse.model_validate(response.json())
 
@@ -107,7 +107,7 @@ class ZeroShotClassificationsResource:
             box=box,
         )
 
-        endpoint = "/classifications/zero-shot/object"
+        endpoint = "classifications/zero-shot/object"
         response = self._client._post(endpoint, json_data=request_data)
         return ZeroShotObjectDetectionResponse.model_validate(response.json())
 
@@ -137,7 +137,7 @@ class ClassificationsResource:
             function_to_apply=function_to_apply
         )
 
-        endpoint = "/classifications/audio"
+        endpoint = "classifications/audio"
         
         # Make request
         response = self._client._post(endpoint, json_data=request_data)
@@ -163,7 +163,7 @@ class ClassificationsResource:
             timeout=timeout
         )
         
-        endpoint = "/classifications/image"
+        endpoint = "classifications/image"
         
         # Make request
         response = self._client._post(endpoint, json_data=request_data)
@@ -187,7 +187,7 @@ class ClassificationsResource:
             function_to_apply=function_to_apply
         )
 
-        endpoint = "/classifications/text"
+        endpoint = "classifications/text"
         
         # Make request
         response = self._client._post(endpoint, json_data=request_data)
@@ -207,7 +207,7 @@ class ClassificationsResource:
             inputs=inputs
         )
 
-        endpoint = "/classifications/token"
+        endpoint = "classifications/token"
         
         # Make request
         response = self._client._post(endpoint, json_data=request_data)
@@ -235,7 +235,7 @@ class ClassificationsResource:
             function_to_apply=function_to_apply
         )
 
-        endpoint = "/classifications/video"
+        endpoint = "classifications/video"
 
         # Make request
         response = self._client._post(endpoint, json_data=request_data)
@@ -265,7 +265,7 @@ class AsyncZeroShotClassificationsResource:
             hypothesis_template=hypothesis_template,
         )
 
-        endpoint = "/classifications/zero-shot/audio"
+        endpoint = "classifications/zero-shot/audio"
         response = await self._client._post(endpoint, json_data=request_data)
         return ZeroShotAudioClassificationResponse.model_validate(response.json())
 
@@ -287,7 +287,7 @@ class AsyncZeroShotClassificationsResource:
             multi_label=multi_label,
         )
 
-        endpoint = "/classifications/zero-shot"
+        endpoint = "classifications/zero-shot"
         response = await self._client._post(endpoint, json_data=request_data)
         return ZeroShotClassificationResponse.model_validate(response.json())
 
@@ -309,7 +309,7 @@ class AsyncZeroShotClassificationsResource:
             timeout=timeout,
         )
 
-        endpoint = "/classifications/zero-shot/image"
+        endpoint = "classifications/zero-shot/image"
         response = await self._client._post(endpoint, json_data=request_data)
         return ZeroShotImageClassificationResponse.model_validate(response.json())
 
@@ -325,7 +325,7 @@ class AsyncZeroShotClassificationsResource:
             box=box,
         )
 
-        endpoint = "/classifications/zero-shot/object"
+        endpoint = "classifications/zero-shot/object"
         response = await self._client._post(endpoint, json_data=request_data)
         return ZeroShotObjectDetectionResponse.model_validate(response.json())
 
@@ -356,7 +356,7 @@ class AsyncClassificationsResource:
             function_to_apply=function_to_apply
         )
         
-        endpoint = "/classifications/audio"
+        endpoint = "classifications/audio"
         
         # Make request
         response = await self._client._post(endpoint, json_data=request_data)
@@ -382,7 +382,7 @@ class AsyncClassificationsResource:
             timeout=timeout
         )
 
-        endpoint = "/classifications/image"
+        endpoint = "classifications/image"
 
         # Make request
         response = await self._client._post(endpoint, json_data=request_data)
@@ -406,7 +406,7 @@ class AsyncClassificationsResource:
             function_to_apply=function_to_apply
         )
 
-        endpoint = "/classifications/text"
+        endpoint = "classifications/text"
 
         # Make request
         response = await self._client._post(endpoint, json_data=request_data)
@@ -426,7 +426,7 @@ class AsyncClassificationsResource:
             inputs=inputs
         )
 
-        endpoint = "/classifications/token"
+        endpoint = "classifications/token"
         
         # Make request
         response = await self._client._post(endpoint, json_data=request_data)
@@ -454,7 +454,7 @@ class AsyncClassificationsResource:
             function_to_apply=function_to_apply
         )
 
-        endpoint = "/classifications/video"
+        endpoint = "classifications/video"
 
         # Make request
         response = await self._client._post(endpoint, json_data=request_data)

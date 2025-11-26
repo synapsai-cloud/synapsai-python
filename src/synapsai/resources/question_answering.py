@@ -56,7 +56,7 @@ class QuestionAnsweringResource:
             tesseract_config=tesseract_config,
             timeout=timeout,
         )
-        endpoint = "/question-answering/document"
+        endpoint = "question-answering/document"
         response = self._client._post(endpoint, json_data=request_data)
         return DocumentQuestionAnsweringResponse.model_validate(response.json())
     
@@ -85,7 +85,7 @@ class QuestionAnsweringResource:
             handle_impossible_answer=handle_impossible_answer,
             align_to_words=align_to_words,
         )
-        endpoint = "/question-answering"
+        endpoint = "question-answering"
         response = self._client._post(endpoint, json_data=request_data)
         return QuestionAnsweringResponse.model_validate(response.json())
     
@@ -106,7 +106,7 @@ class QuestionAnsweringResource:
             padding=padding,
             truncation=truncation,
         )
-        endpoint = "/question-answering/table"
+        endpoint = "question-answering/table"
         response = self._client._post(endpoint, json_data=request_data)
         return TableQuestionAnsweringResponse.model_validate(response.json())
     
@@ -125,7 +125,7 @@ class QuestionAnsweringResource:
             top_k=top_k,
             timeout=timeout,
         )
-        endpoint = "/question-answering/visual"
+        endpoint = "question-answering/visual"
         response = self._client._post(endpoint, json_data=request_data)
         return VisualQuestionAnsweringResponse.model_validate(response.json())
 
@@ -167,7 +167,7 @@ class AsyncQuestionAnsweringResource:
             tesseract_config=tesseract_config,
             timeout=timeout,
         )
-        endpoint = "/question-answering/document"
+        endpoint = "question-answering/document"
         response = await self._client._post(endpoint, json_data=request_data)
         return DocumentQuestionAnsweringResponse.model_validate(response.json())
 
@@ -196,7 +196,7 @@ class AsyncQuestionAnsweringResource:
             handle_impossible_answer=handle_impossible_answer,
             align_to_words=align_to_words,
         )
-        endpoint = "/question-answering"
+        endpoint = "question-answering"
         response = await self._client._post(endpoint, json_data=request_data)
         return QuestionAnsweringResponse.model_validate(response.json())
 
@@ -217,7 +217,7 @@ class AsyncQuestionAnsweringResource:
             padding=padding,
             truncation=truncation,
         )
-        endpoint = "/question-answering/table"
+        endpoint = "question-answering/table"
         response = await self._client._post(endpoint, json_data=request_data)
         return TableQuestionAnsweringResponse.model_validate(response.json())
 
@@ -236,7 +236,7 @@ class AsyncQuestionAnsweringResource:
             top_k=top_k,
             timeout=timeout,
         )
-        endpoint = "/question-answering/visual"
+        endpoint = "question-answering/visual"
         response = await self._client._post(endpoint, json_data=request_data)
         return VisualQuestionAnsweringResponse.model_validate(response.json())
 

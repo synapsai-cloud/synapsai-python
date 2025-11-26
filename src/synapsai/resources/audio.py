@@ -39,7 +39,7 @@ class SpeechResource:
         
         # Build request
         request_data = self._client._build_request(
-            endpoint="/audio/speech",
+            endpoint="audio/speech",
             model=model,
             input=input,
             voice=voice,
@@ -49,12 +49,7 @@ class SpeechResource:
             **kwargs
         )
         
-        # Make request
-        response = self._client._post(
-            "/inference",
-            json_data=request_data,
-            stream=stream
-        )
+        endpoint = "audio/speech"
         
         if stream:
             return self._stream_audio(response)
@@ -96,7 +91,6 @@ class TranscriptionsResource:
         
         # Build request
         request_data = self._client._build_request(
-            endpoint="/audio/transcriptions",
             model=model,
             file=file_data,
             language=language,
@@ -106,9 +100,11 @@ class TranscriptionsResource:
             timestamp_granularities=timestamp_granularities or ["segment"],
             **kwargs
         )
+
+        endpoint = "audio/transcriptions"
         
         # Make request
-        response = self._client._post("/inference", json_data=request_data)
+        response = self._client._post(endpoint, json_data=request_data)
         response_data = response.json()
         return AudioTranscriptionResponse(**response_data)
     
@@ -157,7 +153,6 @@ class AsyncSpeechResource:
         
         # Build request
         request_data = self._client._build_request(
-            endpoint="/audio/speech",
             model=model,
             input=input,
             voice=voice,
@@ -167,9 +162,11 @@ class AsyncSpeechResource:
             **kwargs
         )
         
+        endpoint = "audio/speech"
+        
         # Make request
         response = await self._client._post(
-            "/inference",
+            endpoint,
             json_data=request_data,
             stream=stream
         )
@@ -214,7 +211,6 @@ class AsyncTranscriptionsResource:
         
         # Build request
         request_data = self._client._build_request(
-            endpoint="/audio/transcriptions",
             model=model,
             file=file_data,
             language=language,
@@ -224,9 +220,11 @@ class AsyncTranscriptionsResource:
             timestamp_granularities=timestamp_granularities or ["segment"],
             **kwargs
         )
+
+        endpoint = "audio/transcriptions"
         
         # Make request
-        response = await self._client._post("/inference", json_data=request_data)
+        response = await self._client._post(endpoint, json_data=request_data)
         response_data = response.json()
         return AudioTranscriptionResponse(**response_data)
     

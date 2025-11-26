@@ -22,7 +22,7 @@ class ModelsResource:
         """Get available models."""
         
         # Make request
-        endpoint = "/models"
+        endpoint = "models"
         
         response = self._client._get(endpoint)
         response_data = response.json()
@@ -32,7 +32,7 @@ class ModelsResource:
         """Retrieve a model."""
 
         # Make request
-        endpoint = f"/models/{model}"
+        endpoint = f"models/{model}"
 
         response = self._client._get(endpoint)
         response_data = response.json()
@@ -48,7 +48,7 @@ class AsyncModelsResource:
         """Get available models."""
         
         # Make request
-        endpoint = "/models"
+        endpoint = "models"
         
         response = await self._client._get(endpoint)
         response_data = response.json()
@@ -58,7 +58,7 @@ class AsyncModelsResource:
         """Retrieve a model."""
 
         # Make request
-        endpoint = f"/models/{model}"
+        endpoint = f"models/{model}"
 
         response = await self._client._get(endpoint)
         response_data = response.json()

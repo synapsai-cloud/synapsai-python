@@ -14,6 +14,12 @@ from ..types.images import (
     ImageAnalysisRequest,
     ImageAnalysisResponse,
     ImageSource,
+    DepthEstimationRequest,
+    DepthEstimationResponse,
+    ObjectDetectionRequest,
+    ObjectDetectionResponse,
+    ImageFeatureExtractionRequest,
+    ImageFeatureExtractionResponse,
 )
 from ..exceptions import APIError
 
@@ -53,7 +59,7 @@ class ImagesResource:
         )
         
         # Make request
-        endpoint = "/images/generations"
+        endpoint = "images/generations"
         
         response = self._client._post(endpoint, json_data=request_data)
         response_data = response.json()
@@ -89,7 +95,7 @@ class ImagesResource:
         )
         
         # Make request
-        endpoint = "/images/edits"
+        endpoint = "images/edits"
         
         response = self._client._post(endpoint, json_data=request_data)
         response_data = response.json()
@@ -103,7 +109,7 @@ class ImagesResource:
         generate_kwargs: Optional[Dict] = None,
         **kwargs
     ) -> ImageAnalysisResponse:
-        """Analyze images and extract information (custom endpoint)"""
+        """Analyze images and extract information"""
         
         # Handle image input
         image_data = self._process_image_input(inputs)
@@ -118,11 +124,123 @@ class ImagesResource:
         )
         
         # Make request
-        endpoint = "/images/to-text"
+        endpoint = "images/to-text"
         
         response = self._client._post(endpoint, json_data=request_data)
         response_data = response.json()
         return ImageAnalysisResponse.model_validate(response_data)
+
+    def feature_extraction(
+        self,
+        model: str,
+        images: ImageSource,
+        **kwargs
+    ) -> ImageFeatureExtractionResponse:
+        """Extract features from images"""
+        
+        # Handle image input
+        image_data = self._process_image_input(images)
+        
+        # Build request
+        request_data = self._client._build_request(
+            model=model,
+            images=image_data,
+            **kwargs
+        )
+        
+        # Make request
+        endpoint = "images/feature-extraction"
+        
+        response = self._client._post(endpoint, json_data=request_data)
+        response_data = response.json()
+        return ImageFeatureExtractionResponse.model_validate(response_data)
+
+    def segmentation(
+        self,
+        model: str,
+        inputs: ImageSource,
+        subtask: str = 'panoptic',
+        threshold: float = 0.9,
+        mask_threshold: float = 0.5,
+        overlap_mask_area_threshold: float = 0.5,
+        **kwargs
+    ) -> ImageAnalysisResponse:
+        """Analyze images and extract information."""
+        
+        # Handle image input
+        image_data = self._process_image_input(inputs)
+        
+        # Build request
+        request_data = self._client._build_request(
+            model=model,
+            inputs=image_data,
+            subtask=subtask,
+            threshold=threshold,
+            mask_threshold=mask_threshold,
+            overlap_mask_area_threshold=overlap_mask_area_threshold,
+            **kwargs
+        )
+        
+        # Make request
+        endpoint = "images/segmentation"
+        
+        response = self._client._post(endpoint, json_data=request_data)
+        response_data = response.json()
+        return ImageAnalysisResponse.model_validate(response_data)
+
+    def depth_estimation(
+        self,
+        model: str,
+        inputs: ImageSource,
+        parameters: Optional[Dict] = None,
+        **kwargs
+    ) -> DepthEstimationResponse:
+        """Analyze images and extract information."""
+        
+        # Handle image input
+        image_data = self._process_image_input(inputs)
+        
+        # Build request
+        request_data = self._client._build_request(
+            model=model,
+            inputs=image_data,
+            parameters=parameters,
+            **kwargs
+        )
+        
+        # Make request
+        endpoint = "images/depth-estimation"
+        
+        response = self._client._post(endpoint, json_data=request_data)
+        response_data = response.json()
+        return DepthEstimationResponse.model_validate(response_data)
+
+    def object_detection(
+        self,
+        model: str,
+        inputs: ImageSource,
+        threshold: float = 0.5,
+        **kwargs
+    ) -> ObjectDetectionResponse:
+        """Analyze images and extract information."""
+        
+        # Handle image input
+        image_data = self._process_image_input(inputs)
+        
+        # Build request
+        request_data = self._client._build_request(
+            model=model,
+            inputs=image_data,
+            threshold=threshold,
+            **kwargs
+        )
+        
+        # Make request
+        endpoint = "images/object-detection"
+        
+        response = self._client._post(endpoint, json_data=request_data)
+        response_data = response.json()
+        return DepthEstimationResponse.model_validate(response_data)
     
     def _process_image_input(self, image: ImageSource):
         """Process image input (file path, bytes, or base64)"""
@@ -178,7 +296,7 @@ class AsyncImagesResource:
         )
         
         # Make request
-        endpoint = "/images/generations"
+        endpoint = "images/generations"
         
         response = await self._client._post(endpoint, json_data=request_data)
         response_data = response.json()
@@ -214,7 +332,7 @@ class AsyncImagesResource:
         )
         
         # Make request
-        endpoint = "/images/edits"
+        endpoint = "images/edits"
         
         response = await self._client._post(endpoint, json_data=request_data)
         response_data = response.json()
@@ -248,6 +366,118 @@ class AsyncImagesResource:
         response = await self._client._post(endpoint, json_data=request_data)
         response_data = response.json()
         return ImageAnalysisResponse.model_validate(response_data)
+
+    async def feature_extraction(
+        self,
+        model: str,
+        images: ImageSource,
+        **kwargs
+    ) -> ImageFeatureExtractionResponse:
+        """Extract features from images"""
+        
+        # Handle image input
+        image_data = self._process_image_input(images)
+        
+        # Build request
+        request_data = self._client._build_request(
+            model=model,
+            images=image_data,
+            **kwargs
+        )
+        
+        # Make request
+        endpoint = "images/feature-extraction"
+        
+        response = await self._client._post(endpoint, json_data=request_data)
+        response_data = response.json()
+        return ImageFeatureExtractionResponse.model_validate(response_data)
+
+    async def segmentation(
+        self,
+        model: str,
+        inputs: ImageSource,
+        subtask: str = 'panoptic',
+        threshold: float = 0.9,
+        mask_threshold: float = 0.5,
+        overlap_mask_area_threshold: float = 0.5,
+        **kwargs
+    ) -> ImageAnalysisResponse:
+        """Analyze images and extract information."""
+        
+        # Handle image input
+        image_data = self._process_image_input(inputs)
+        
+        # Build request
+        request_data = self._client._build_request(
+            model=model,
+            inputs=image_data,
+            subtask=subtask,
+            threshold=threshold,
+            mask_threshold=mask_threshold,
+            overlap_mask_area_threshold=overlap_mask_area_threshold,
+            **kwargs
+        )
+        
+        # Make request
+        endpoint = "images/segmentation"
+        
+        response = await self._client._post(endpoint, json_data=request_data)
+        response_data = response.json()
+        return ImageAnalysisResponse.model_validate(response_data)
+
+    async def depth_estimation(
+        self,
+        model: str,
+        inputs: ImageSource,
+        parameters: Optional[Dict] = None,
+        **kwargs
+    ) -> DepthEstimationResponse:
+        """Analyze images and extract information."""
+        
+        # Handle image input
+        image_data = self._process_image_input(inputs)
+        
+        # Build request
+        request_data = self._client._build_request(
+            model=model,
+            inputs=image_data,
+            parameters=parameters,
+            **kwargs
+        )
+        
+        # Make request
+        endpoint = "images/depth-estimation"
+        
+        response = await self._client._post(endpoint, json_data=request_data)
+        response_data = response.json()
+        return DepthEstimationResponse.model_validate(response_data)
+
+    async def object_detection(
+        self,
+        model: str,
+        inputs: ImageSource,
+        threshold: float = 0.5,
+        **kwargs
+    ) -> ObjectDetectionResponse:
+        """Analyze images and extract information."""
+        
+        # Handle image input
+        image_data = self._process_image_input(inputs)
+        
+        # Build request
+        request_data = self._client._build_request(
+            model=model,
+            inputs=image_data,
+            threshold=threshold,
+            **kwargs
+        )
+        
+        # Make request
+        endpoint = "images/object-detection"
+        
+        response = await self._client._post(endpoint, json_data=request_data)
+        response_data = response.json()
+        return DepthEstimationResponse.model_validate(response_data)
     
     def _process_image_input(self, image: ImageSource):
         """Process image input (file path, bytes, or base64)"""
