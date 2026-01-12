@@ -1,3 +1,17 @@
+# Copyright 2026 SynapsAI Technologies Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Main client classes for SynapsAI API
 """
@@ -9,7 +23,6 @@ import time
 import random
 import asyncio
 from typing import Optional, Dict, Any, Union, AsyncIterator, Iterator
-from urllib.parse import urljoin
 
 from .resources import (
     ChatResource,
@@ -296,7 +309,7 @@ class SynapsAI(BaseClient):
         The attempt to establish the stream will be retried using the same backoff rules.
         Once the stream is established, streaming errors are raised as-is.
         """
-        url = self.base_url + endpoint
+        url = build_url(self.base_url, endpoint)
         base_kwargs = {
             "method": "POST",
             "url": url,

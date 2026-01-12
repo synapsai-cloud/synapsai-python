@@ -20,7 +20,8 @@ setup(
     python_requires=">=3.8",
     install_requires=[
         "httpx>=0.23.0, <1.0.0",
-        "pydantic>=1.9.0, <3",
-        "typing-extensions>=4.11, <5",
+        "pydantic>=2.0, <3",
+        "typing-extensions>=4.5, <5",
+        "Pillow>=9.5.0, <11",
     ],
 )

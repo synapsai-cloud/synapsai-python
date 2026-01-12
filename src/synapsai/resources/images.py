@@ -1,8 +1,23 @@
+# Copyright 2026 SynapsAI Technologies Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Images resource handlers
 """
 
 from typing import TYPE_CHECKING, Optional, Dict
+from PIL import Image
 import base64
 import os
 
@@ -26,6 +41,40 @@ from ..exceptions import APIError
 if TYPE_CHECKING:
     from ..client import SynapsAI, AsyncSynapsAI
 
+def process_image_input(image: ImageSource):
+    """Process image input (file path, bytes, base64, URL, or lists of those)"""
+
+    if image is None:
+        return None
+
+    # Handle batched inputs
+    if isinstance(image, list):
+        return [process_image_input(img) for img in image]
+
+    # Single input handling
+    if isinstance(image, str):
+        # URL
+        if image.startswith(("http://", "https://")):
+            return image
+
+        # File path
+        if os.path.isfile(image):
+            with open(image, "rb") as f:
+                image_bytes = f.read()
+            return base64.b64encode(image_bytes).decode("utf-8")
+
+        # Assume base64
+        return image
+
+    if isinstance(image, bytes):
+        return base64.b64encode(image).decode("utf-8")
+
+    if isinstance(image, Image.Image):
+        return base64.b64encode(image.tobytes()).decode("utf-8")
+
+    raise ValueError(
+        "Image must be a file path, bytes, PIL.Image, URL, base64 string, or a list of these"
+    )
 
 class ImagesResource:
     """Images resource handler"""
@@ -79,8 +128,8 @@ class ImagesResource:
         """Edit images with prompts"""
         
         # Handle image input (file path, bytes, or base64)
-        image_data = self._process_image_input(image)
-        mask_data = self._process_image_input(mask) if mask else None
+        image_data = process_image_input(image)
+        mask_data = process_image_input(mask) if mask else None
         
         # Build request
         request_data = self._client._build_request(
@@ -112,7 +161,7 @@ class ImagesResource:
         """Analyze images and extract information"""
         
         # Handle image input
-        image_data = self._process_image_input(inputs)
+        image_data = process_image_input(inputs)
         
         # Build request
         request_data = self._client._build_request(
@@ -139,7 +188,7 @@ class ImagesResource:
         """Extract features from images"""
         
         # Handle image input
-        image_data = self._process_image_input(images)
+        image_data = process_image_input(images)
         
         # Build request
         request_data = self._client._build_request(
@@ -168,7 +217,7 @@ class ImagesResource:
         """Analyze images and extract information."""
         
         # Handle image input
-        image_data = self._process_image_input(inputs)
+        image_data = process_image_input(inputs)
         
         # Build request
         request_data = self._client._build_request(
@@ -198,7 +247,7 @@ class ImagesResource:
         """Analyze images and extract information."""
         
         # Handle image input
-        image_data = self._process_image_input(inputs)
+        image_data = process_image_input(inputs)
         
         # Build request
         request_data = self._client._build_request(
@@ -225,7 +274,7 @@ class ImagesResource:
         """Analyze images and extract information."""
         
         # Handle image input
-        image_data = self._process_image_input(inputs)
+        image_data = process_image_input(inputs)
         
         # Build request
         request_data = self._client._build_request(
@@ -240,29 +289,7 @@ class ImagesResource:
         
         response = self._client._post(endpoint, json_data=request_data)
         response_data = response.json()
-        return DepthEstimationResponse.model_validate(response_data)
-    
-    def _process_image_input(self, image: ImageSource):
-        """Process image input (file path, bytes, or base64)"""
-        if image is None:
-            return None
-            
-        if isinstance(image, str):
-            # Check if it's a URL
-            if image.startswith(("http://", "https://")):
-                return image
-            # Check if it's a file path
-            if os.path.isfile(image):
-                with open(image, "rb") as f:
-                    image_bytes = f.read()
-                return base64.b64encode(image_bytes).decode("utf-8")
-            # Assume it's already base64
-            return image
-        elif isinstance(image, bytes):
-            return base64.b64encode(image).decode("utf-8")
-        else:
-            raise ValueError("Image must be a file path, bytes, URL, or base64 string")
-
+        return ObjectDetectionResponse.model_validate(response_data)
 
 class AsyncImagesResource:
     """Async images resource handler"""
@@ -316,8 +343,8 @@ class AsyncImagesResource:
         """Edit images with prompts asynchronously"""
         
         # Handle image input
-        image_data = self._process_image_input(image)
-        mask_data = self._process_image_input(mask) if mask else None
+        image_data = process_image_input(image)
+        mask_data = process_image_input(mask) if mask else None
         
         # Build request
         request_data = self._client._build_request(
@@ -349,7 +376,7 @@ class AsyncImagesResource:
         """Analyze images and extract information asynchronously (custom endpoint)"""
         
         # Handle image input
-        inputs_data = self._process_image_input(inputs)
+        inputs_data = process_image_input(inputs)
         
         # Build request
         request_data = self._client._build_request(
@@ -376,7 +403,7 @@ class AsyncImagesResource:
         """Extract features from images"""
         
         # Handle image input
-        image_data = self._process_image_input(images)
+        image_data = process_image_input(images)
         
         # Build request
         request_data = self._client._build_request(
@@ -405,7 +432,7 @@ class AsyncImagesResource:
         """Analyze images and extract information."""
         
         # Handle image input
-        image_data = self._process_image_input(inputs)
+        image_data = process_image_input(inputs)
         
         # Build request
         request_data = self._client._build_request(
@@ -435,7 +462,7 @@ class AsyncImagesResource:
         """Analyze images and extract information."""
         
         # Handle image input
-        image_data = self._process_image_input(inputs)
+        image_data = process_image_input(inputs)
         
         # Build request
         request_data = self._client._build_request(
@@ -462,7 +489,7 @@ class AsyncImagesResource:
         """Analyze images and extract information."""
         
         # Handle image input
-        image_data = self._process_image_input(inputs)
+        image_data = process_image_input(inputs)
         
         # Build request
         request_data = self._client._build_request(
@@ -477,25 +504,4 @@ class AsyncImagesResource:
         
         response = await self._client._post(endpoint, json_data=request_data)
         response_data = response.json()
-        return DepthEstimationResponse.model_validate(response_data)
-    
-    def _process_image_input(self, image: ImageSource):
-        """Process image input (file path, bytes, or base64)"""
-        if image is None:
-            return None
-            
-        if isinstance(image, str):
-            # Check if it's a URL
-            if image.startswith(("http://", "https://")):
-                return image
-            # Check if it's a file path
-            if os.path.isfile(image):
-                with open(image, "rb") as f:
-                    image_bytes = f.read()
-                return base64.b64encode(image_bytes).decode("utf-8")
-            # Assume it's already base64
-            return image
-        elif isinstance(image, bytes):
-            return base64.b64encode(image).decode("utf-8")
-        else:
-            raise ValueError("Image must be a file path, bytes, URL, or base64 string") 
+        return ObjectDetectionResponse.model_validate(response_data)

@@ -1,3 +1,17 @@
+# Copyright 2026 SynapsAI Technologies Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Chat completion resource handlers
 """
@@ -28,8 +42,8 @@ class ChatCompletionsResource:
         top_p: float = 1.0,
         n: int = 1,
         stream: bool = False,
-        stop = None,
-        max_tokens = None,
+        stop = [],
+        max_completion_tokens = 128,
         presence_penalty: float = 0.0,
         frequency_penalty: float = 0.0,
         logit_bias = None,
@@ -52,7 +66,7 @@ class ChatCompletionsResource:
             n=n,
             stream=stream,
             stop=stop,
-            max_tokens=max_tokens,
+            max_completion_tokens=max_completion_tokens,
             presence_penalty=presence_penalty,
             frequency_penalty=frequency_penalty,
             logit_bias=logit_bias,
@@ -75,7 +89,7 @@ class ChatCompletionsResource:
 
     def _stream_completions(self, endpoint, request_data) -> Iterator[ChatCompletionChunk]:
         for chunk_data in self._client._stream_response(endpoint, request_data):
-            try:                
+            try:
                 yield ChatCompletionChunk(**chunk_data)
             except Exception as e:
                 print(f"Warning: Error creating CompletionChunk from data: {e}")
@@ -105,8 +119,8 @@ class AsyncChatCompletionsResource:
         top_p: float = 1.0,
         n: int = 1,
         stream: bool = False,
-        stop = None,
-        max_tokens = None,
+        stop = [],
+        max_completion_tokens = 128,
         presence_penalty: float = 0.0,
         frequency_penalty: float = 0.0,
         logit_bias = None,
@@ -129,7 +143,7 @@ class AsyncChatCompletionsResource:
             n=n,
             stream=stream,
             stop=stop,
-            max_tokens=max_tokens,
+            max_completion_tokens=max_completion_tokens,
             presence_penalty=presence_penalty,
             frequency_penalty=frequency_penalty,
             logit_bias=logit_bias,
