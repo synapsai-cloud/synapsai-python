@@ -24,6 +24,8 @@ from .completions import CompletionsResource, AsyncCompletionsResource
 from .classifications import ClassificationsResource, AsyncClassificationsResource
 from .question_answering import QuestionAnsweringResource, AsyncQuestionAnsweringResource
 from .models import ModelsResource, AsyncModelsResource
+from .feature_extraction import FeatureExtractionResource, AsyncFeatureExtractionResource
+from .fill_mask import FillMaskResource, AsyncFillMaskResource
 
 __all__ = [
     "ChatResource",
@@ -42,4 +44,8 @@ __all__ = [
     "AsyncQuestionAnsweringResource",
     "ModelsResource",
     "AsyncModelsResource",
+    "FeatureExtractionResource",
+    "AsyncFeatureExtractionResource",
+    "FillMaskResource",
+    "AsyncFillMaskResource",
 ]

@@ -122,14 +122,14 @@ class ChatCompletionChoice(BaseModel):
     index: int
     message: Optional[ChatMessage] = None
     delta: Optional[Delta] = None
-    logprobs: Optional[dict] = None
+    logprobs: Optional[dict | list[dict]] = None
     finish_reason: Optional[FinishReason] = None
 
 class CompletionChoice(BaseModel):
     """Choice object"""
     index: int
     text: str
-    logprobs: Optional[dict] = None
+    logprobs: Optional[dict | list[dict]] = None
     finish_reason: Optional[FinishReason] = None
 
 class ChatCompletionResponse(APIResponse):

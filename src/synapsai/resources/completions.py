@@ -23,11 +23,12 @@ from ..types.completion import (
     CompletionResponse,
     CompletionChunk,
 )
-from ..exceptions import APIError
+from ..logging import get_logger
 
 if TYPE_CHECKING:
     from ..client import SynapsAI, AsyncSynapsAI
 
+logger = get_logger(__name__)
 
 class CompletionsResource:
     """Chat completions resource"""
@@ -81,8 +82,11 @@ class CompletionsResource:
             try:
                 yield CompletionChunk(**chunk_data)
             except Exception as e:
-                print(f"Warning: Error creating CompletionChunk from data: {e}")
-                print(f"Chunk data: {chunk_data}")
+                logger.warning(
+                    "Failed to parse CompletionChunk",
+                    exc_info=True,
+                    extra={"endpoint": endpoint},
+                )
                 continue
 
 
@@ -141,8 +145,11 @@ class AsyncCompletionsResource:
             try:
                 yield CompletionChunk(**chunk_data)
             except Exception as e:
-                print(f"Warning: Error creating CompletionChunk from data: {e}")
-                print(f"Chunk data: {chunk_data}")
+                logger.warning(
+                    "Failed to parse CompletionChunk",
+                    exc_info=True,
+                    extra={"endpoint": endpoint},
+                )
                 continue
 
 

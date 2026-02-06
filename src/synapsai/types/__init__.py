@@ -24,6 +24,8 @@ from .classifications import *
 from .question_answering import *
 from .common import *
 from .models import *
+from .feature_extraction import *
+from .fill_mask import *
 
 __all__ = [
     # Models types
@@ -102,6 +104,14 @@ __all__ = [
     "TableQuestionAnsweringResponse",
     "VisualQuestionAnsweringRequest",
     "VisualQuestionAnsweringResponse",
+
+    # Feature extraction types
+    "FeatureExtractionRequest",
+    "FeatureExtractionResponse",
+
+    # Fill mask types
+    "FillMaskRequest",
+    "FillMaskResponse",
     
     # Common types
     "APIResponse",

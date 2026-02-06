@@ -35,6 +35,8 @@ from ..types.images import (
     ObjectDetectionResponse,
     ImageFeatureExtractionRequest,
     ImageFeatureExtractionResponse,
+    MaskGenerationRequest,
+    MaskGenerationResponse,
 )
 from ..exceptions import APIError
 
@@ -291,6 +293,44 @@ class ImagesResource:
         response_data = response.json()
         return ObjectDetectionResponse.model_validate(response_data)
 
+    def mask_generation(
+        self,
+        model: str,
+        image: ImageSource,
+        mask_threshold: float = 0.0,
+        pred_iou_thresh: float = 0.88,
+        stability_score_thresh: float = 0.95,
+        stability_score_offset: int = 1,
+        crops_nms_thresh: float = 0.7,
+        crops_n_layers: int = 0,
+        crop_overlap_ratio: float = 0.3413,
+        crop_n_points_downscale_factor: int = 1,
+        **kwargs
+    ) -> MaskGenerationResponse:
+        """Generate masks from images"""
+        
+        image_data = process_image_input(image)
+        
+        request_data = self._client._build_request(
+            model=model,
+            image=image_data,
+            mask_threshold=mask_threshold,
+            pred_iou_thresh=pred_iou_thresh,
+            stability_score_thresh=stability_score_thresh,
+            stability_score_offset=stability_score_offset,
+            crops_nms_thresh=crops_nms_thresh,
+            crops_n_layers=crops_n_layers,
+            crop_overlap_ratio=crop_overlap_ratio,
+            crop_n_points_downscale_factor=crop_n_points_downscale_factor,
+            **kwargs
+        )
+
+        endpoint = "images/mask-generation"
+
+        response = self._client._post(endpoint, json_data=request_data)
+        response_data = response.json()
+        return MaskGenerationResponse.model_validate(response_data)
+
 class AsyncImagesResource:
     """Async images resource handler"""
     
@@ -505,3 +545,41 @@ class AsyncImagesResource:
         response = await self._client._post(endpoint, json_data=request_data)
         response_data = response.json()
         return ObjectDetectionResponse.model_validate(response_data)
+
+    async def mask_generation(
+        self,
+        model: str,
+        image: ImageSource,
+        mask_threshold: float = 0.0,
+        pred_iou_thresh: float = 0.88,
+        stability_score_thresh: float = 0.95,
+        stability_score_offset: int = 1,
+        crops_nms_thresh: float = 0.7,
+        crops_n_layers: int = 0,
+        crop_overlap_ratio: float = 0.3413,
+        crop_n_points_downscale_factor: int = 1,
+        **kwargs
+    ) -> MaskGenerationResponse:
+        """Generate masks from images"""
+        
+        image_data = process_image_input(image)
+        
+        request_data = self._client._build_request(
+            model=model,
+            image=image_data,
+            mask_threshold=mask_threshold,
+            pred_iou_thresh=pred_iou_thresh,
+            stability_score_thresh=stability_score_thresh,
+            stability_score_offset=stability_score_offset,
+            crops_nms_thresh=crops_nms_thresh,
+            crops_n_layers=crops_n_layers,
+            crop_overlap_ratio=crop_overlap_ratio,
+            crop_n_points_downscale_factor=crop_n_points_downscale_factor,
+            **kwargs
+        )
+
+        endpoint = "images/mask-generation"
+
+        response = await self._client._post(endpoint, json_data=request_data)
+        response_data = response.json()
+        return MaskGenerationResponse.model_validate(response_data)

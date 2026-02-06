@@ -173,3 +173,23 @@ class ImageFeatureExtractionResponse(APIResponse):
     model: str
     data: List[Dict[str, Any]]
     usage: Optional[Usage] = None
+
+class MaskGenerationRequest(BaseModel):
+    """Mask Generation Request"""
+    model: str
+    image: ImageSource
+    mask_threshold: float = 0.0
+    pred_iou_thresh: float = 0.88
+    stability_score_thresh: float = 0.95
+    stability_score_offset: int = 1
+    crops_nms_thresh: float = 0.7
+    crops_n_layers: int = 0
+    crop_overlap_ratio: float = 0.3413
+    crop_n_points_downscale_factor: int = 1
+
+class MaskGenerationResponse(APIResponse):
+    """Mask Generation Response"""
+    object: Literal["list"] = "list"
+    model: str
+    data: List[Dict[str, Any]]
+    usage: Optional[Usage] = None

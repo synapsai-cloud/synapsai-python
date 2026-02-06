@@ -40,10 +40,17 @@ from .resources import (
     QuestionAnsweringResource,
     AsyncQuestionAnsweringResource,
     ModelsResource,
-    AsyncModelsResource
+    AsyncModelsResource,
+    FeatureExtractionResource,
+    AsyncFeatureExtractionResource,
+    FillMaskResource,
+    AsyncFillMaskResource,
 )
 from .exceptions import APIError, AuthenticationError
 from .utils import build_url
+from .logging import get_logger
+
+logger = get_logger(__name__)
 
 class BaseClient:
     """Base client with common functionality"""
@@ -114,6 +121,15 @@ class BaseClient:
         }
 
     def _handle_error_response(self, response: httpx.Response) -> None:
+        # Ensure content is loaded for streamed responses
+        try:
+            # If _content is missing, this will populate it
+            if not hasattr(response, "_content"):
+                response.read()
+        except Exception:
+            # If this fails, we still fall back to a generic message below
+            pass
+    
         try:
             error_data = response.json()
             # Support the infra server structured error format:
@@ -182,6 +198,7 @@ class SynapsAI(BaseClient):
             self._client = httpx.Client(
                 timeout=self.timeout,
                 headers=self._headers,
+                http2=True
             )
 
         # Initialize resource handlers
@@ -193,6 +210,8 @@ class SynapsAI(BaseClient):
         self.classifications = ClassificationsResource(self)
         self.question_answering = QuestionAnsweringResource(self)
         self.models = ModelsResource(self)
+        self.feature_extraction = FeatureExtractionResource(self)
+        self.fill_mask = FillMaskResource(self)
 
     def __enter__(self):
         return self
@@ -350,8 +369,8 @@ class SynapsAI(BaseClient):
                                 yield json.loads(data_line)
                             except json.JSONDecodeError as e:
                                 # Log the malformed data for debugging
-                                print(f"Warning: Received malformed JSON data: {data_line[:100]}...")
-                                print(f"JSON decode error: {e}")
+                                logger.warning(f"Received malformed JSON data: {data_line[:100]}...")
+                                logger.warning(f"JSON decode error: {e}")
                                 continue
                     # If stream ends naturally, return
                     return
@@ -377,6 +396,7 @@ class AsyncSynapsAI(BaseClient):
             self._client = httpx.AsyncClient(
                 timeout=self.timeout,
                 headers=self._headers,
+                http2=True
             )
 
         # Initialize async resource handlers
@@ -388,6 +408,8 @@ class AsyncSynapsAI(BaseClient):
         self.classifications = AsyncClassificationsResource(self)
         self.question_answering = AsyncQuestionAnsweringResource(self)
         self.models = AsyncModelsResource(self)
+        self.feature_extraction = AsyncFeatureExtractionResource(self)
+        self.fill_mask = AsyncFillMaskResource(self)
 
     async def __aenter__(self):
         return self

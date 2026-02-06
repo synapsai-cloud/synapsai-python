@@ -33,52 +33,85 @@ if TYPE_CHECKING:
     from ..client import SynapsAI, AsyncSynapsAI
 
 
-class SpeechResource:
-    """Speech synthesis resource"""
-    
-    def __init__(self, client: "SynapsAI"):
-        self._client = client
-    
+class _SpeechStreamingResponse:
+    """Synchronous streaming response wrapper for speech audio."""
+
+    def __init__(self, response):
+        self._response = response
+
+    def __enter__(self) -> "_SpeechStreamingResponse":
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        close = getattr(self._response, "close", None)
+        if callable(close):
+            close()
+
+    def __iter__(self) -> Iterator[bytes]:
+        for chunk in self._response.iter_bytes(chunk_size=8192):
+            if chunk:
+                yield chunk
+
+    def stream_to_file(self, file_path) -> None:
+        """Stream audio to a file path or file-like object."""
+        # Accept both Path-like and str for convenience
+        if hasattr(file_path, "write"):
+            # File-like object
+            for chunk in self:
+                file_path.write(chunk)
+        else:
+            from pathlib import Path
+
+            path = Path(file_path)
+            with path.open("wb") as f:
+                for chunk in self:
+                    f.write(chunk)
+
+
+class _SpeechWithStreamingResponse:
+    """Namespace that mirrors openai.audio.speech.with_streaming_response."""
+
+    def __init__(self, speech_resource: "SpeechResource"):
+        self._speech_resource = speech_resource
+
     def create(
         self,
         model: str,
         input: str,
-        voice: Union[str, Voice],
+        voice: Union[str, "Voice", None] = None,
         response_format: Union[str, AudioFormat] = "mp3",
         speed: float = 1.0,
-        stream: bool = False,
-        **kwargs
-    ) -> Union[AudioSpeechResponse, Iterator[bytes]]:
-        """Generate speech from text"""
-        
-        # Build request
-        request_data = self._client._build_request(
-            endpoint="audio/speech",
+        **kwargs,
+    ) -> _SpeechStreamingResponse:
+        """Create a streaming speech response."""
+
+        # Build request (re-use SpeechResource's internal logic)
+        request_data = self._speech_resource._client._build_request(
             model=model,
             input=input,
             voice=voice,
             response_format=response_format,
             speed=speed,
-            stream=stream,
-            **kwargs
+            stream=True,
+            **kwargs,
         )
-        
+
         endpoint = "audio/speech"
-        
-        if stream:
-            return self._stream_audio(response)
-        else:
-            content_type = response.headers.get("content-type", "audio/mpeg")
-            return AudioSpeechResponse(
-                content=response.content,
-                content_type=content_type
-            )
+
+        response = self._speech_resource._client._post(
+            endpoint,
+            json_data=request_data
+        )
+
+        return _SpeechStreamingResponse(response)
+
+
+class SpeechResource:
+    """Speech synthesis resource"""
     
-    def _stream_audio(self, response) -> Iterator[bytes]:
-        """Stream audio chunks"""
-        for chunk in response.iter_bytes(chunk_size=8192):
-            if chunk:
-                yield chunk
+    def __init__(self, client: "SynapsAI"):
+        self._client = client
+        self.with_streaming_response = _SpeechWithStreamingResponse(self)
 
 
 class TranscriptionsResource:
