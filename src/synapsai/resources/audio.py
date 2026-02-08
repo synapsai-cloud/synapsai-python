@@ -17,8 +17,7 @@ Audio resource handlers
 """
 
 from typing import Union, Iterator, AsyncIterator, List, TYPE_CHECKING, Literal
-import base64
-import os
+from pathlib import Path
 
 from ..types.audio import (
     AudioSpeechResponse,
@@ -27,7 +26,7 @@ from ..types.audio import (
     AudioFormat,
     TimestampGranularity,
 )
-from ..exceptions import APIError
+from ..processing import process_audio_input
 
 if TYPE_CHECKING:
     from ..client import SynapsAI, AsyncSynapsAI
@@ -60,8 +59,6 @@ class _SpeechStreamingResponse:
             for chunk in self:
                 file_path.write(chunk)
         else:
-            from pathlib import Path
-
             path = Path(file_path)
             with path.open("wb") as f:
                 for chunk in self:
@@ -92,7 +89,7 @@ class _SpeechWithStreamingResponse:
             voice=voice,
             response_format=response_format,
             speed=speed,
-            stream=True,
+            stream_format="audio",
             **kwargs,
         )
 
@@ -134,7 +131,7 @@ class TranscriptionsResource:
         """Transcribe audio to text"""
         
         # Handle file input
-        file_data = self._process_audio_input(file)
+        file_data = process_audio_input(file)
         
         # Build request
         request_data = self._client._build_request(
@@ -144,7 +141,7 @@ class TranscriptionsResource:
             prompt=prompt,
             response_format=response_format,
             temperature=temperature,
-            timestamp_granularities=timestamp_granularities or ["segment"],
+            timestamp_granularities=timestamp_granularities,
             **kwargs
         )
 
@@ -154,21 +151,6 @@ class TranscriptionsResource:
         response = self._client._post(endpoint, json_data=request_data)
         response_data = response.json()
         return AudioTranscriptionResponse(**response_data)
-    
-    def _process_audio_input(self, file):
-        """Process audio file input"""
-        if isinstance(file, str):
-            # Check if it's a file path
-            if os.path.isfile(file):
-                with open(file, "rb") as f:
-                    audio_bytes = f.read()
-                return base64.b64encode(audio_bytes).decode("utf-8")
-            # Assume it's already base64
-            return file
-        elif isinstance(file, bytes):
-            return base64.b64encode(file).decode("utf-8")
-        else:
-            raise ValueError("File must be a file path, bytes, or base64 string")
 
 
 class AudioResource:
@@ -254,7 +236,7 @@ class AsyncTranscriptionsResource:
         """Transcribe audio to text asynchronously"""
         
         # Handle file input
-        file_data = self._process_audio_input(file)
+        file_data = process_audio_input(file)
         
         # Build request
         request_data = self._client._build_request(
@@ -264,7 +246,7 @@ class AsyncTranscriptionsResource:
             prompt=prompt,
             response_format=response_format,
             temperature=temperature,
-            timestamp_granularities=timestamp_granularities or ["segment"],
+            timestamp_granularities=timestamp_granularities,
             **kwargs
         )
 
@@ -274,22 +256,6 @@ class AsyncTranscriptionsResource:
         response = await self._client._post(endpoint, json_data=request_data)
         response_data = response.json()
         return AudioTranscriptionResponse(**response_data)
-    
-    def _process_audio_input(self, file):
-        """Process audio file input"""
-        if isinstance(file, str):
-            # Check if it's a file path
-            if os.path.isfile(file):
-                with open(file, "rb") as f:
-                    audio_bytes = f.read()
-                return base64.b64encode(audio_bytes).decode("utf-8")
-            # Assume it's already base64
-            return file
-        elif isinstance(file, bytes):
-            return base64.b64encode(file).decode("utf-8")
-        else:
-            raise ValueError("File must be a file path, bytes, or base64 string")
-
 
 class AsyncAudioResource:
     """Async audio resource handler"""

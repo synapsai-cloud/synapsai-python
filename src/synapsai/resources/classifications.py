@@ -29,9 +29,9 @@ from ..types.classifications import (
     ZeroShotImageClassificationResponse,
     ZeroShotObjectDetectionResponse,
 )
-from ..exceptions import APIError
 from PIL import Image
 import numpy as np
+from ..processing import process_image_input, process_audio_input
 
 
 if TYPE_CHECKING:
@@ -53,6 +53,8 @@ class ZeroShotClassificationsResource:
         hypothesis_template: Optional[str] = None,
     ) -> ZeroShotAudioClassificationResponse:
         """Assign labels to the audio(s) passed as inputs (zero-shot)."""
+
+        audios = process_audio_input(audios)
 
         request_data = self._client._build_request(
             model=model,
@@ -96,6 +98,8 @@ class ZeroShotClassificationsResource:
         timeout: Optional[float] = None,
     ) -> ZeroShotImageClassificationResponse:
         """Zero-shot image classification."""
+
+        image = process_image_input(image)
 
         request_data = self._client._build_request(
             model=model,
@@ -141,7 +145,9 @@ class ClassificationsResource:
         top_k: Optional[int] = None, 
         function_to_apply: Optional[str] = None,
     ) -> AudioClassificationResponse:
-        """Classify the sequence(s) given as inputs. See the [`AutomaticSpeechRecognitionPipeline`] documentation for more information."""
+        """Audio classification."""
+
+        inputs = process_audio_input(inputs)
         
         # Build request
         request_data = self._client._build_request(
@@ -167,6 +173,8 @@ class ClassificationsResource:
         timeout: Optional[float] = None,
     ) -> ImageClassificationResponse:
         """Assign labels to the image(s) passed as inputs."""
+
+        inputs = process_image_input(inputs)
         
         # Build request
         request_data = self._client._build_request(
@@ -360,7 +368,7 @@ class AsyncClassificationsResource:
         top_k: Optional[int] = None, 
         function_to_apply: Optional[str] = None,
     ) -> AudioClassificationResponse:
-        """Classify the sequence(s) given as inputs. See the [`AutomaticSpeechRecognitionPipeline`] documentation for more information."""
+        """Audio classification."""
         
         # Build request
         request_data = self._client._build_request(

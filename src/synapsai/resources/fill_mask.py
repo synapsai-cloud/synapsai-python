@@ -16,7 +16,7 @@
 Fill mask resource handlers
 """
 
-from typing import TYPE_CHECKING, Optional, Dict, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from ..types.fill_mask import FillMaskResponse
 

@@ -82,6 +82,13 @@ class Segment(BaseModel):
     temperature: float
 
 
+class Char(BaseModel):
+    """Character-level timestamp"""
+    char: str
+    start: float
+    end: float
+
+
 class AudioTranscriptionRequest(BaseModel):
     """Audio transcription request"""
     model: str
@@ -107,5 +114,6 @@ class AudioTranscriptionResponse(APIResponse):
     language: Optional[str] = None
     duration: Optional[float] = None
     words: Optional[List[Word]] = None
-    segments: Optional[List[Segment]] = None 
+    segments: Optional[List[Segment]] = None
+    chars: Optional[List[Char]] = None
     usage: Optional[Usage] = None

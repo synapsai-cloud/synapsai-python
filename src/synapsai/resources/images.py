@@ -17,9 +17,6 @@ Images resource handlers
 """
 
 from typing import TYPE_CHECKING, Optional, Dict
-from PIL import Image
-import base64
-import os
 
 from ..types.images import (
     ImageGenerateRequest,
@@ -39,44 +36,10 @@ from ..types.images import (
     MaskGenerationResponse,
 )
 from ..exceptions import APIError
+from ..processing import process_image_input
 
 if TYPE_CHECKING:
     from ..client import SynapsAI, AsyncSynapsAI
-
-def process_image_input(image: ImageSource):
-    """Process image input (file path, bytes, base64, URL, or lists of those)"""
-
-    if image is None:
-        return None
-
-    # Handle batched inputs
-    if isinstance(image, list):
-        return [process_image_input(img) for img in image]
-
-    # Single input handling
-    if isinstance(image, str):
-        # URL
-        if image.startswith(("http://", "https://")):
-            return image
-
-        # File path
-        if os.path.isfile(image):
-            with open(image, "rb") as f:
-                image_bytes = f.read()
-            return base64.b64encode(image_bytes).decode("utf-8")
-
-        # Assume base64
-        return image
-
-    if isinstance(image, bytes):
-        return base64.b64encode(image).decode("utf-8")
-
-    if isinstance(image, Image.Image):
-        return base64.b64encode(image.tobytes()).decode("utf-8")
-
-    raise ValueError(
-        "Image must be a file path, bytes, PIL.Image, URL, base64 string, or a list of these"
-    )
 
 class ImagesResource:
     """Images resource handler"""

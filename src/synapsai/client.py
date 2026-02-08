@@ -198,7 +198,8 @@ class SynapsAI(BaseClient):
             self._client = httpx.Client(
                 timeout=self.timeout,
                 headers=self._headers,
-                http2=True
+                http2=True,
+                verify=False,
             )
 
         # Initialize resource handlers
