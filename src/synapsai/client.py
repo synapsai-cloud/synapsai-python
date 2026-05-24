@@ -29,6 +29,8 @@ from .resources import (
     AsyncChatResource,
     ImagesResource,
     AsyncImagesResource,
+    VideosResource,
+    AsyncVideosResource,
     EmbeddingsResource,
     AsyncEmbeddingsResource,
     AudioResource,
@@ -45,6 +47,8 @@ from .resources import (
     AsyncFeatureExtractionResource,
     FillMaskResource,
     AsyncFillMaskResource,
+    RerankResource,
+    AsyncRerankResource,
 )
 from .exceptions import APIError, AuthenticationError
 from .utils import build_url
@@ -60,7 +64,7 @@ class BaseClient:
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
         timeout: float = 300.0,
-        max_retries: int = 3,
+        max_retries: int = 1,
         headers: Optional[Dict[str, str]] = None,
         httpx_client: Optional[httpx.Client] = None,
     ):
@@ -192,6 +196,19 @@ class BaseClient:
 class SynapsAI(BaseClient):
     """Synchronous SynapsAI client"""
 
+    chat: ChatResource
+    images: ImagesResource
+    videos: VideosResource
+    embeddings: EmbeddingsResource
+    audio: AudioResource
+    completions: CompletionsResource
+    classifications: ClassificationsResource
+    question_answering: QuestionAnsweringResource
+    models: ModelsResource
+    feature_extraction: FeatureExtractionResource
+    fill_mask: FillMaskResource
+    rerank: RerankResource
+
     def __init__(self, api_key: Optional[str] = None, **kwargs):
         super().__init__(api_key=api_key, **kwargs)
         if self._client is None:
@@ -205,6 +222,7 @@ class SynapsAI(BaseClient):
         # Initialize resource handlers
         self.chat = ChatResource(self)
         self.images = ImagesResource(self)
+        self.videos = VideosResource(self)
         self.embeddings = EmbeddingsResource(self)
         self.audio = AudioResource(self)
         self.completions = CompletionsResource(self)
@@ -213,6 +231,7 @@ class SynapsAI(BaseClient):
         self.models = ModelsResource(self)
         self.feature_extraction = FeatureExtractionResource(self)
         self.fill_mask = FillMaskResource(self)
+        self.rerank = RerankResource(self)
 
     def __enter__(self):
         return self
@@ -316,6 +335,10 @@ class SynapsAI(BaseClient):
         """Make a GET request"""
         return self._request("GET", endpoint)
 
+    def _delete(self, endpoint: str) -> httpx.Response:
+        """Make a DELETE request"""
+        return self._request("DELETE", endpoint)
+
     def _stream_response(
         self,
         endpoint: str,
@@ -387,9 +410,31 @@ class SynapsAI(BaseClient):
 
         raise APIError("Failed to establish stream after retries")
 
+    def _get_stream(self, endpoint: str) -> httpx.Response:
+        """Make a streaming GET request for binary content (e.g. video download)."""
+        url = build_url(self.base_url, endpoint)
+        request = self._client.build_request("GET", url, timeout=self.timeout)
+        response = self._client.send(request, stream=True)
+        if response.status_code >= 400:
+            response.read()
+            self._handle_error_response(response)
+        return response
+
 
 class AsyncSynapsAI(BaseClient):
     """Asynchronous SynapsAI client"""
+    chat: AsyncChatResource
+    images: AsyncImagesResource
+    videos: AsyncVideosResource
+    embeddings: AsyncEmbeddingsResource
+    audio: AsyncAudioResource
+    completions: AsyncCompletionsResource
+    classifications: AsyncClassificationsResource
+    question_answering: AsyncQuestionAnsweringResource
+    models: AsyncModelsResource
+    feature_extraction: AsyncFeatureExtractionResource
+    fill_mask: AsyncFillMaskResource
+    rerank: AsyncRerankResource
 
     def __init__(self, api_key: Optional[str] = None, **kwargs):
         super().__init__(api_key=api_key, **kwargs)
@@ -397,12 +442,13 @@ class AsyncSynapsAI(BaseClient):
             self._client = httpx.AsyncClient(
                 timeout=self.timeout,
                 headers=self._headers,
-                http2=True
+                http2=True,
             )
 
         # Initialize async resource handlers
         self.chat = AsyncChatResource(self)
         self.images = AsyncImagesResource(self)
+        self.videos = AsyncVideosResource(self)
         self.embeddings = AsyncEmbeddingsResource(self)
         self.audio = AsyncAudioResource(self)
         self.completions = AsyncCompletionsResource(self)
@@ -411,6 +457,7 @@ class AsyncSynapsAI(BaseClient):
         self.models = AsyncModelsResource(self)
         self.feature_extraction = AsyncFeatureExtractionResource(self)
         self.fill_mask = AsyncFillMaskResource(self)
+        self.rerank = AsyncRerankResource(self)
 
     async def __aenter__(self):
         return self
@@ -499,6 +546,10 @@ class AsyncSynapsAI(BaseClient):
         """Make a GET request"""
         return await self._request("GET", endpoint=endpoint)
 
+    async def _delete(self, endpoint: str) -> httpx.Response:
+        """Make a DELETE request"""
+        return await self._request("DELETE", endpoint=endpoint)
+
     async def _stream_response(
         self,
         endpoint: str,
@@ -565,3 +616,13 @@ class AsyncSynapsAI(BaseClient):
                 raise APIError(str(e))
 
         raise APIError("Failed to establish stream after retries")
+
+    async def _get_stream(self, endpoint: str) -> httpx.Response:
+        """Make an async streaming GET request for binary content (e.g. video download)."""
+        url = build_url(self.base_url, endpoint)
+        request = self._client.build_request("GET", url, timeout=self.timeout)
+        response = await self._client.send(request, stream=True)
+        if response.status_code >= 400:
+            await response.aread()
+            self._handle_error_response(response)
+        return response

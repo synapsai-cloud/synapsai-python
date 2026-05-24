@@ -13,19 +13,28 @@
 # limitations under the License.
 
 """
-Feature extraction type definitions
+Text ranking type definitions
 """
 
-from typing import Optional, Dict, Any, Union, List, Literal
+from typing import List, Optional
 from pydantic import BaseModel
-from .common import APIResponse, Usage
+from .common import Usage
 
-class FeatureExtractionRequest(BaseModel):
-    model: str
-    inputs: Union[str, List[str]]
 
-class FeatureExtractionResponse(APIResponse):
-    object: Literal["list"] = "list"
-    data: List[Dict[str, Any]]
+class RerankRequest(BaseModel):
     model: str
+    query: str
+    documents: List[str]
+    top_n: Optional[int] = None
+    max_tokens_per_doc: int = 4096
+
+
+class RerankResult(BaseModel):
+    index: int
+    relevance_score: float
+
+
+class RerankResponse(BaseModel):
+    id: Optional[str] = None
+    results: List[RerankResult]
     usage: Optional[Usage] = None

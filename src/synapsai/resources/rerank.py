@@ -13,68 +13,78 @@
 # limitations under the License.
 
 """
-Feature extraction resource handlers
+Text ranking resource handlers
 """
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, List
 
-from ..types.feature_extraction import FeatureExtractionResponse
+from ..types.rerank import RerankResponse
 
 if TYPE_CHECKING:
     from ..client import SynapsAI, AsyncSynapsAI
 
-class FeatureExtractionResource:
-    """Feature extraction resource handler"""
-    
+
+class RerankResource:
+    """Text ranking resource handler"""
+
     def __init__(self, client: "SynapsAI"):
         self._client = client
-    
+
     def create(
         self,
         model: str,
-        inputs: Union[str, list[str]],
-        **kwargs
-    ) -> FeatureExtractionResponse:
-        """Generate images from text prompts"""
-        
-        # Build request
+        query: str,
+        documents: List[str],
+        top_n: int | None = None,
+        max_tokens_per_doc: int = 4096,
+        **kwargs,
+    ) -> RerankResponse:
+        """Rank documents against a query using a text-ranking model."""
+
         request_data = self._client._build_request(
             model=model,
-            inputs=inputs,
-            **kwargs
+            query=query,
+            documents=documents,
+            top_n=top_n,
+            max_tokens_per_doc=max_tokens_per_doc,
+            **kwargs,
         )
-        
-        # Make request
-        endpoint = "feature-extraction"
-        
+
+        endpoint = "rerank"
+
         response = self._client._post(endpoint, json_data=request_data)
         response_data = response.json()
-        return FeatureExtractionResponse.model_validate(response_data)
+        return RerankResponse.model_validate(response_data)
 
-class AsyncFeatureExtractionResource:
-    """Feature extraction resource handler"""
-    
+
+class AsyncRerankResource:
+    """Async text ranking resource handler"""
+
     def __init__(self, client: "AsyncSynapsAI"):
         self._client = client
-    
+
     async def create(
         self,
         model: str,
-        inputs: Union[str, list[str]],
-        **kwargs
-    ) -> FeatureExtractionResponse:
-        """Generate images from text prompts"""
-        
-        # Build request
+        query: str,
+        documents: List[str],
+        top_n: int | None = None,
+        max_tokens_per_doc: int = 4096,
+        **kwargs,
+    ) -> RerankResponse:
+        """Rank documents against a query using a text-ranking model."""
+
         request_data = self._client._build_request(
             model=model,
-            inputs=inputs,
-            **kwargs
+            query=query,
+            documents=documents,
+            top_n=top_n,
+            max_tokens_per_doc=max_tokens_per_doc,
+            **kwargs,
         )
-        
-        # Make request
-        endpoint = "feature-extraction"
-        
+
+        endpoint = "rerank"
+
         response = await self._client._post(endpoint, json_data=request_data)
         response_data = response.json()
-        return FeatureExtractionResponse.model_validate(response_data)
+        return RerankResponse.model_validate(response_data)

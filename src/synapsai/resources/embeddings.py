@@ -103,11 +103,13 @@ class EmbeddingsResource:
         if not emb_response or not getattr(emb_response, "data", None):
             raise APIError("Failed to obtain embeddings")
 
-        # First embedding is for source
-        source_emb = emb_response.data[0].embedding
+        # Sort by index to guarantee alignment with input order
+        sorted_data = sorted(emb_response.data, key=lambda x: x.index)
+
+        source_emb = sorted_data[0].embedding  # now guaranteed to be source_sentence
 
         results = []
-        for item in emb_response.data[1:]:
+        for item in sorted_data[1:]:
             sim = _cosine_similarity(source_emb, item.embedding)
             result_obj = {
                 "object": "similarity",

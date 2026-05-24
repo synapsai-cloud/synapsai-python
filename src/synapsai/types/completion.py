@@ -119,7 +119,7 @@ class Delta(BaseModel):
 
 class ChatCompletionChoice(BaseModel):
     """Choice object"""
-    index: int
+    index: int = Field(default=0)
     message: Optional[ChatMessage] = None
     delta: Optional[Delta] = None
     logprobs: Optional[dict | list[dict]] = None
@@ -127,7 +127,7 @@ class ChatCompletionChoice(BaseModel):
 
 class CompletionChoice(BaseModel):
     """Choice object"""
-    index: int
+    index: int = Field(default=0)
     text: str
     logprobs: Optional[dict | list[dict]] = None
     finish_reason: Optional[FinishReason] = None
@@ -135,7 +135,7 @@ class CompletionChoice(BaseModel):
 class ChatCompletionResponse(APIResponse):
     """Chat completion response"""
     model: str
-    object: Literal["chat.completion"] = "chat.completion"
+    object: str
     choices: List[ChatCompletionChoice]
     system_fingerprint: Optional[str] = None
     usage: Optional[Usage] = None
@@ -143,7 +143,7 @@ class ChatCompletionResponse(APIResponse):
 class CompletionResponse(APIResponse):
     """Completion response"""
     model: str
-    object: Literal["completion"] = "completion"
+    object: str
     choices: List[CompletionChoice]
     system_fingerprint: Optional[str] = None
     usage: Optional[Usage] = None
@@ -151,7 +151,7 @@ class CompletionResponse(APIResponse):
 class ChatCompletionChunk(APIResponse):
     """Chat completion chunk for streaming"""
     model: str
-    object: Literal["chat.completion.chunk"] = "chat.completion.chunk"
+    object: str
     choices: List[ChatCompletionChoice]
     system_fingerprint: Optional[str] = None 
     usage: Optional[Usage] = None
@@ -159,7 +159,7 @@ class ChatCompletionChunk(APIResponse):
 class CompletionChunk(APIResponse):
     """Completion chunk for streaming"""
     model: str
-    object: Literal["completion.chunk"] = "completion.chunk"
+    object: str
     choices: List[CompletionChoice]
     system_fingerprint: Optional[str] = None 
     usage: Optional[Usage] = None

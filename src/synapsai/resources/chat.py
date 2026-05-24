@@ -23,6 +23,7 @@ from ..types.completion import (
     ChatCompletionChunk,
 )
 from ..logging import get_logger
+from ..exceptions import APIError
 
 if TYPE_CHECKING:
     from ..client import SynapsAI, AsyncSynapsAI
@@ -91,7 +92,12 @@ class ChatCompletionsResource:
     def _stream_completions(self, endpoint, request_data) -> Iterator[ChatCompletionChunk]:
         for chunk_data in self._client._stream_response(endpoint, request_data):
             try:
+                error = chunk_data.get("error")
+                if error:
+                    raise APIError(error)
                 yield ChatCompletionChunk(**chunk_data)
+            except APIError as e:
+                raise e
             except Exception as e:
                 logger.warning(
                     "Failed to parse ChatCompletionChunk",
@@ -99,7 +105,6 @@ class ChatCompletionsResource:
                     extra={"endpoint": endpoint},
                 )
                 continue
-
 
 class ChatResource:
     """Chat resource handler"""

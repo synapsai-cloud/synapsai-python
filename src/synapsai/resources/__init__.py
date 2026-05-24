@@ -18,24 +18,30 @@ Resource handlers for SynapsAI client library
 
 from .chat import ChatResource, AsyncChatResource
 from .images import ImagesResource, AsyncImagesResource
+from .videos import VideosResource, AsyncVideosResource
 from .embeddings import EmbeddingsResource, AsyncEmbeddingsResource
-from .audio import AudioResource, AsyncAudioResource
+from .audio import AudioResource, AsyncAudioResource, TranslationsResource, AsyncTranslationsResource
 from .completions import CompletionsResource, AsyncCompletionsResource
 from .classifications import ClassificationsResource, AsyncClassificationsResource
 from .question_answering import QuestionAnsweringResource, AsyncQuestionAnsweringResource
 from .models import ModelsResource, AsyncModelsResource
 from .feature_extraction import FeatureExtractionResource, AsyncFeatureExtractionResource
 from .fill_mask import FillMaskResource, AsyncFillMaskResource
+from .rerank import RerankResource, AsyncRerankResource
 
 __all__ = [
     "ChatResource",
     "AsyncChatResource",
     "ImagesResource",
     "AsyncImagesResource",
+    "VideosResource",
+    "AsyncVideosResource",
     "EmbeddingsResource",
     "AsyncEmbeddingsResource",
     "AudioResource",
     "AsyncAudioResource",
+    "TranslationsResource",
+    "AsyncTranslationsResource",
     "CompletionsResource",
     "AsyncCompletionsResource",
     "ClassificationsResource",
@@ -48,4 +54,6 @@ __all__ = [
     "AsyncFeatureExtractionResource",
     "FillMaskResource",
     "AsyncFillMaskResource",
+    "RerankResource",
+    "AsyncRerankResource",
 ]

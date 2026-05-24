@@ -16,7 +16,7 @@
 Image generation, editing, and analysis type definitions
 """
 
-from typing import Optional, Dict, Any, Union, List, Literal
+from typing import Optional, Dict, Any, Union, List, Literal, Tuple
 from pydantic import BaseModel, Field
 from enum import Enum
 
@@ -24,32 +24,10 @@ from .common import APIResponse, Usage
 
 ImageSource = Union[str, bytes, List[str], List[bytes]]
 
-class ImageSize(str, Enum):
-    """Image size options"""
-    SIZE_256x256 = "256x256"
-    SIZE_512x512 = "512x512"
-    SIZE_1024x1024 = "1024x1024"
-    SIZE_1792x1024 = "1792x1024"
-    SIZE_1024x1792 = "1024x1792"
-
-
-class ImageQuality(str, Enum):
-    """Image quality options"""
-    STANDARD = "standard"
-    HD = "hd"
-
-
-class ImageStyle(str, Enum):
-    """Image style options"""
-    VIVID = "vivid"
-    NATURAL = "natural"
-
-
 class ResponseFormat(str, Enum):
     """Image response format"""
     URL = "url"
     B64_JSON = "b64_json"
-
 
 class Image(BaseModel):
     """Image object"""
@@ -63,10 +41,8 @@ class ImageGenerateRequest(BaseModel):
     model: str
     prompt: str = Field(max_length=4000)
     n: Optional[int] = Field(default=1, ge=1, le=10)
-    quality: Optional[ImageQuality] = ImageQuality.STANDARD
-    response_format: Optional[ResponseFormat] = ResponseFormat.URL
-    size: Optional[ImageSize] = ImageSize.SIZE_1024x1024
-    style: Optional[ImageStyle] = ImageStyle.VIVID
+    response_format: ResponseFormat = ResponseFormat.URL
+    size: Union[Tuple[int, int], str] = "512x512"
 
 class ImageGenerateResponse(APIResponse):
     """Image generation response"""
@@ -81,8 +57,8 @@ class ImageEditRequest(BaseModel):
     mask: Optional[ImageSource] = Field(default=None, description="Mask image (base64 encoded, URL, or file)")
     prompt: str = Field(max_length=1000)
     n: Optional[int] = Field(default=1, ge=1, le=10)
-    size: Optional[ImageSize] = ImageSize.SIZE_1024x1024
-    response_format: Optional[ResponseFormat] = ResponseFormat.URL
+    size: Union[Tuple[int, int], str] = "512x512"
+    response_format: ResponseFormat = ResponseFormat.URL
 
 class ImageEditResponse(APIResponse):
     """Image edit response"""
@@ -94,6 +70,7 @@ class ImageAnalysisRequest(BaseModel):
     """Image analysis request"""
     model: str
     image: ImageSource = Field(description="The image to analyze (base64 encoded, URL, or file)")
+    prompt: Optional[str] = None
     fields: Optional[List[str]] = Field(
         default=None,
         description="Specific fields to extract (e.g., ['objects', 'text', 'colors', 'mood'])"
@@ -165,7 +142,7 @@ class DepthEstimationResponse(APIResponse):
 class ImageFeatureExtractionRequest(BaseModel):
     """Feature extraction request"""
     model: str
-    images: ImageSource = Field(description="The image to extract features from (base64 encoded, URL, or file)")
+    inputs: ImageSource = Field(description="The image to extract features from (base64 encoded, URL, or file)")
 
 class ImageFeatureExtractionResponse(APIResponse):
     """Feature extraction response"""

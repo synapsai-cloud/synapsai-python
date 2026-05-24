@@ -18,6 +18,7 @@ Type definitions for SynapsAI client library
 
 from .completion import *
 from .images import *
+from .videos import *
 from .embeddings import *
 from .audio import *
 from .classifications import *
@@ -26,6 +27,7 @@ from .common import *
 from .models import *
 from .feature_extraction import *
 from .fill_mask import *
+from .rerank import *
 
 __all__ = [
     # Models types
@@ -52,11 +54,16 @@ __all__ = [
     "ImageEditResponse",
     "ImageAnalysisRequest",
     "ImageAnalysisResponse",
-    "ImageSize",
-    "ImageQuality",
-    "ImageStyle",
     "Image",
     "ImageSource",
+    
+    # Video types
+    "Video",
+    "VideoCreateError",
+    "VideoCreateRequest",
+    "VideoDeleteResponse",
+    "VideoInputReference",
+    "VideoStatus",
     
     # Embedding types
     "EmbeddingRequest",
@@ -70,8 +77,11 @@ __all__ = [
     "AudioSpeechResponse",
     "AudioTranscriptionRequest",
     "AudioTranscriptionResponse",
+    "AudioTranslationRequest",
+    "AudioTranslationResponse",
+    "AudioTranscriptionChunk",
+    "AudioTranslationChunk",
     "AudioFormat",
-    "Voice",
     "Transcription",
     "Usage",
 
@@ -112,6 +122,11 @@ __all__ = [
     # Fill mask types
     "FillMaskRequest",
     "FillMaskResponse",
+
+    # Text ranking types
+    "RerankRequest",
+    "RerankResult",
+    "RerankResponse",
     
     # Common types
     "APIResponse",

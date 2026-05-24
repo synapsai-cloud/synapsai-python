@@ -52,10 +52,10 @@ class ImagesResource:
         model: str,
         prompt: str,
         n: int = 1,
-        quality: str = "standard",
         response_format: str = "url",
         size: str = "1024x1024",
-        style: str = "vivid",
+        num_inference_steps: int = 25,
+        guidance_scale: float = 7.5,
         **kwargs
     ) -> ImageGenerateResponse:
         """Generate images from text prompts"""
@@ -65,10 +65,10 @@ class ImagesResource:
             model=model,
             prompt=prompt,
             n=n,
-            quality=quality,
             response_format=response_format,
             size=size,
-            style=style,
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
             **kwargs
         )
         
@@ -84,10 +84,12 @@ class ImagesResource:
         image: ImageSource,
         model: str,
         prompt: str,
-        mask: ImageSource = None,
+        mask: Optional[ImageSource] = None,
         n: int = 1,
         size: str = "1024x1024",
         response_format: str = "url",
+        num_inference_steps: int = 25,
+        guidance_scale: float = 7.5,
         **kwargs
     ) -> ImageEditResponse:
         """Edit images with prompts"""
@@ -105,6 +107,8 @@ class ImagesResource:
             n=n,
             size=size,
             response_format=response_format,
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
             **kwargs
         )
         
@@ -119,6 +123,7 @@ class ImagesResource:
         self,
         model: str,
         inputs: ImageSource,
+        prompt: Optional[str] = None,
         max_new_tokens: int = 300,
         generate_kwargs: Optional[Dict] = None,
         **kwargs
@@ -132,6 +137,7 @@ class ImagesResource:
         request_data = self._client._build_request(
             model=model,
             inputs=image_data,
+            prompt=prompt,
             max_new_tokens=max_new_tokens,
             generate_kwargs=generate_kwargs,
             **kwargs
@@ -147,18 +153,18 @@ class ImagesResource:
     def feature_extraction(
         self,
         model: str,
-        images: ImageSource,
+        inputs: ImageSource,
         **kwargs
     ) -> ImageFeatureExtractionResponse:
         """Extract features from images"""
         
         # Handle image input
-        image_data = process_image_input(images)
+        image_data = process_image_input(inputs)
         
         # Build request
         request_data = self._client._build_request(
             model=model,
-            images=image_data,
+            inputs=image_data,
             **kwargs
         )
         
@@ -305,10 +311,10 @@ class AsyncImagesResource:
         model: str,
         prompt: str,
         n: int = 1,
-        quality: str = "standard",
         response_format: str = "url",
         size: str = "1024x1024",
-        style: str = "vivid",
+        num_inference_steps: int = 25,
+        guidance_scale: float = 7.5,
         **kwargs
     ) -> ImageGenerateResponse:
         """Generate images from text prompts asynchronously"""
@@ -318,10 +324,10 @@ class AsyncImagesResource:
             model=model,
             prompt=prompt,
             n=n,
-            quality=quality,
             response_format=response_format,
             size=size,
-            style=style,
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
             **kwargs
         )
         
@@ -337,10 +343,12 @@ class AsyncImagesResource:
         image: ImageSource,
         model: str,
         prompt: str,
-        mask: ImageSource = None,
+        mask: Optional[ImageSource] = None,
         n: int = 1,
         size: str = "1024x1024",
         response_format: str = "url",
+        num_inference_steps: int = 25,
+        guidance_scale: float = 7.5,
         **kwargs
     ) -> ImageEditResponse:
         """Edit images with prompts asynchronously"""
@@ -358,6 +366,8 @@ class AsyncImagesResource:
             n=n,
             size=size,
             response_format=response_format,
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
             **kwargs
         )
         
@@ -372,6 +382,7 @@ class AsyncImagesResource:
         self,
         inputs: ImageSource,
         model: str,
+        prompt: Optional[str] = None,
         max_new_tokens: int = 300,
         generate_kwargs: Optional[Dict] = None,
         **kwargs
@@ -385,6 +396,7 @@ class AsyncImagesResource:
         request_data = self._client._build_request(
             model=model,
             inputs=inputs_data,
+            prompt=prompt,
             max_new_tokens=max_new_tokens,
             generate_kwargs=generate_kwargs,
             **kwargs
@@ -400,18 +412,18 @@ class AsyncImagesResource:
     async def feature_extraction(
         self,
         model: str,
-        images: ImageSource,
+        inputs: ImageSource,
         **kwargs
     ) -> ImageFeatureExtractionResponse:
         """Extract features from images"""
         
         # Handle image input
-        image_data = process_image_input(images)
+        image_data = process_image_input(inputs)
         
         # Build request
         request_data = self._client._build_request(
             model=model,
-            images=image_data,
+            inputs=image_data,
             **kwargs
         )
         

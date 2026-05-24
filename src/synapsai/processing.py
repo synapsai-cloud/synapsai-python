@@ -1,11 +1,9 @@
 from PIL import Image
 import base64
 import os
-from typing import Any
-import numpy as np
-import _io
+import io
 
-def process_image_input(image: Any):
+def process_image_input(image):
     """Process image input (file path, bytes, base64, URL, or lists of those)"""
 
     if image is None:
@@ -28,16 +26,20 @@ def process_image_input(image: Any):
                     image_bytes = f.read()
             except FileNotFoundError:
                 raise ValueError("File not found")
-            return base64.b64encode(image_bytes).decode("utf-8")
+            return "data:image/jpeg;base64," + base64.b64encode(image_bytes).decode("utf-8")
 
         # Assume base64
         return image
 
     if isinstance(image, bytes):
-        return base64.b64encode(image).decode("utf-8")
+        return "data:image/jpeg;base64," + base64.b64encode(image).decode("utf-8")
 
     if isinstance(image, Image.Image):
-        return base64.b64encode(image.tobytes()).decode("utf-8")
+        buf = io.BytesIO()
+        fmt = image.format or "PNG"
+        image.save(buf, format=fmt)
+        mime = "image/png" if fmt == "PNG" else "image/jpeg"
+        return f"data:{mime};base64," + base64.b64encode(buf.getvalue()).decode()
 
     raise ValueError(
         "Image must be a file path, bytes, PIL.Image, URL, base64 string, or a list of these"
@@ -60,14 +62,39 @@ def process_audio_input(file):
                     audio_bytes = f.read()
             except FileNotFoundError:
                 raise ValueError("File not found")
-            return base64.b64encode(audio_bytes).decode("utf-8")
-        # Assume it's already base64
+            return "data:audio/wav;base64," + base64.b64encode(audio_bytes).decode("utf-8")
+        # Assume it's already base64 or URL
         return file
     elif isinstance(file, bytes):
-        return base64.b64encode(file).decode("utf-8")
-    elif isinstance(file, np.ndarray):
-        return base64.b64encode(file.tobytes()).decode("utf-8")
-    elif isinstance(file, _io.BufferedReader):
-        return base64.b64encode(file.read()).decode("utf-8")
+        return "data:audio/wav;base64," + base64.b64encode(file).decode("utf-8")
+    elif isinstance(file, io.IOBase):
+        return "data:audio/wav;base64," + base64.b64encode(file.read()).decode("utf-8")
+    else:
+        raise ValueError("File must be a file path, bytes, or base64 string")
+
+def process_video_input(file):
+    """Process video file input"""
+    if file is None:
+        return None
+
+    # Handle batched inputs
+    if isinstance(file, list):
+        return [process_video_input(f) for f in file]
+
+    if isinstance(file, str):
+        # Check if it's a file path
+        if os.path.isfile(file):
+            try:
+                with open(file, "rb") as f:
+                    video_bytes = f.read()
+            except FileNotFoundError:
+                raise ValueError("File not found")
+            return "data:video/mp4;base64," + base64.b64encode(video_bytes).decode("utf-8")
+        # Assume it's already base64 or URL
+        return file
+    elif isinstance(file, bytes):
+        return "data:video/mp4;base64," + base64.b64encode(file).decode("utf-8")
+    elif isinstance(file, io.IOBase):
+        return "data:video/mp4;base64," + base64.b64encode(file.read()).decode("utf-8")
     else:
         raise ValueError("File must be a file path, bytes, or base64 string")

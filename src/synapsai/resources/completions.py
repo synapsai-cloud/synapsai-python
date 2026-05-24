@@ -24,6 +24,7 @@ from ..types.completion import (
     CompletionChunk,
 )
 from ..logging import get_logger
+from ..exceptions import APIError
 
 if TYPE_CHECKING:
     from ..client import SynapsAI, AsyncSynapsAI
@@ -80,8 +81,14 @@ class CompletionsResource:
     def _stream_completions(self, endpoint, request_data) -> Iterator[CompletionChunk]:
         for chunk_data in self._client._stream_response(endpoint, request_data):
             try:
+                error = chunk_data.get("error")
+                if error:
+                    raise APIError(error)
                 yield CompletionChunk(**chunk_data)
+            except APIError as e:
+                raise e
             except Exception as e:
+                print(e)
                 logger.warning(
                     "Failed to parse CompletionChunk",
                     exc_info=True,

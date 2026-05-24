@@ -31,7 +31,7 @@ from ..types.classifications import (
 )
 from PIL import Image
 import numpy as np
-from ..processing import process_image_input, process_audio_input
+from ..processing import process_image_input, process_audio_input, process_video_input
 
 
 if TYPE_CHECKING:
@@ -113,31 +113,13 @@ class ZeroShotClassificationsResource:
         response = self._client._post(endpoint, json_data=request_data)
         return ZeroShotImageClassificationResponse.model_validate(response.json())
 
-    def object(
-        self,
-        model: str,
-        box,
-    ) -> ZeroShotObjectDetectionResponse:
-        """Zero-shot object detection utility endpoint."""
-
-        request_data = self._client._build_request(
-            model=model,
-            box=box,
-        )
-
-        endpoint = "classifications/zero-shot/object"
-        response = self._client._post(endpoint, json_data=request_data)
-        return ZeroShotObjectDetectionResponse.model_validate(response.json())
-
-
 class ClassificationsResource:
     """Classification resource handler"""
     
     def __init__(self, client: "SynapsAI"):
         self._client = client
         self.zero_shot = ZeroShotClassificationsResource(client)
-    
-    
+
     def audio(
         self,
         model: str,
@@ -246,6 +228,8 @@ class ClassificationsResource:
         function_to_apply: Optional[str] = None,
     ) -> VideoClassificationResponse:
         """Assign labels to the video(s) passed as inputs."""
+
+        inputs = process_video_input(inputs)
         
         # Build request
         request_data = self._client._build_request(
@@ -271,6 +255,7 @@ class AsyncZeroShotClassificationsResource:
     
     def __init__(self, client: "AsyncSynapsAI"):
         self._client = client
+
     async def audio(
         self,
         model: str,
@@ -334,23 +319,6 @@ class AsyncZeroShotClassificationsResource:
         endpoint = "classifications/zero-shot/image"
         response = await self._client._post(endpoint, json_data=request_data)
         return ZeroShotImageClassificationResponse.model_validate(response.json())
-
-    async def object(
-        self,
-        model: str,
-        box,
-    ) -> ZeroShotObjectDetectionResponse:
-        """Zero-shot object detection utility endpoint."""
-
-        request_data = self._client._build_request(
-            model=model,
-            box=box,
-        )
-
-        endpoint = "classifications/zero-shot/object"
-        response = await self._client._post(endpoint, json_data=request_data)
-        return ZeroShotObjectDetectionResponse.model_validate(response.json())
-
 
 
 class AsyncClassificationsResource:
@@ -465,6 +433,8 @@ class AsyncClassificationsResource:
         function_to_apply: Optional[str] = None,
     ) -> VideoClassificationResponse:
         """Assign labels to the video(s) passed as inputs."""
+        
+        inputs = process_video_input(inputs)
         
         # Build request
         request_data = self._client._build_request(
