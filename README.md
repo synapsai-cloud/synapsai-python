@@ -43,6 +43,7 @@ You can configure the SDK using environment variables instead of hardcoding your
 Here is how to initialize the client and fetch a list of all deployed models on your account:
 
 ```python
+import os
 from synapsai import SynapsAI
 
 # Initialize the client (picks up env variables automatically if arguments are omitted)
