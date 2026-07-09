@@ -16,7 +16,7 @@
 Chat completion resource handlers
 """
 
-from typing import Union, Iterator, AsyncIterator, TYPE_CHECKING
+from typing import Union, Iterator, AsyncIterator, TYPE_CHECKING, Optional, Literal
 
 from ..types.completion import (
     ChatCompletionResponse,
@@ -55,6 +55,7 @@ class ChatCompletionsResource:
         tool_choice = None,
         response_format = None,
         seed = None,
+        reasoning_effort: Optional[Literal["none", "minimal", "low", "medium", "high", "xhigh", "max"]] = None,
         **kwargs
     ) -> Union[ChatCompletionResponse, Iterator[ChatCompletionChunk]]:
         """Create a chat completion"""
@@ -78,6 +79,7 @@ class ChatCompletionsResource:
             tool_choice=tool_choice,
             response_format=response_format,
             seed=seed,
+            reasoning_effort=reasoning_effort,
             **kwargs
         )
 
@@ -95,7 +97,7 @@ class ChatCompletionsResource:
                 error = chunk_data.get("error")
                 if error:
                     raise APIError(error)
-                yield ChatCompletionChunk(**chunk_data)
+                yield ChatCompletionChunk.model_validate(chunk_data)
             except APIError as e:
                 raise e
             except Exception as e:
@@ -139,6 +141,7 @@ class AsyncChatCompletionsResource:
         tool_choice = None,
         response_format = None,
         seed = None,
+        reasoning_effort: Optional[Literal["none", "minimal", "low", "medium", "high", "xhigh", "max"]] = None,
         **kwargs
     ) -> Union[ChatCompletionResponse, AsyncIterator[ChatCompletionChunk]]:
         """Create a chat completion asynchronously"""
@@ -162,6 +165,7 @@ class AsyncChatCompletionsResource:
             tool_choice=tool_choice,
             response_format=response_format,
             seed=seed,
+            reasoning_effort=reasoning_effort,
             **kwargs
         )
     
@@ -177,7 +181,7 @@ class AsyncChatCompletionsResource:
         """Stream chat completion chunks asynchronously"""
         async for chunk_data in self._client._stream_response(endpoint, request_data):
             try:
-                yield ChatCompletionChunk(**chunk_data)
+                yield ChatCompletionChunk.model_validate(chunk_data)
             except Exception as e:
                 logger.warning(
                     "Failed to parse ChatCompletionChunk",

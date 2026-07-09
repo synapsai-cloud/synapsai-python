@@ -1,0 +1,36 @@
+[build-system]
+requires = [
+    "setuptools>=65.0",
+    "wheel",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "synapsai-python"
+version = "0.1.0"
+description = "The official SynapsAI Cloud Python SDK"
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+authors = [
+    { name = "SynapsAI Technologies Inc.", email = "support@synapsai.cloud" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "httpx>=0.23.0",
+    "pydantic>=2.0,<3",
+    "typing-extensions>=4.5",
+    "Pillow>=9.5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/synapsai-cloud/synapsai-python"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools]
+include-package-data = true

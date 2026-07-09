@@ -9,13 +9,10 @@ The official SynapsAI Cloud AI inference Python SDK. Seamlessly integrate multi-
 
 ## Installation
 
-The SDK currently needs to be built from source. Clone the repository and install it using `pip`:
+Install the latest version of the SDK:
 
 ```bash
-git clone https://github.com/synapsai-cloud/synapsai-python.git
-cd synapsai-python
-pip install .
-
+pip install --upgrade synapsai-python
 ```
 
 ### Requirements
