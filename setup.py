@@ -22,6 +22,6 @@ setup(
         "httpx>=0.23.0",
         "pydantic>=2.0,<3",
         "typing-extensions>=4.5",
-        "Pillow>=9.5.0",
+        "Pillow>=12.2.0",
     ],
 )
