@@ -59,7 +59,9 @@ for model in models_page.data:
 
 ## Documentation
 
-For advanced configurations, deep-dive usage guides, and comprehensive code examples for every resource, visit our [Examples Documentation](https://docs.synapsai.cloud/examples/introduction).
+Local guides live in [`docs/`](docs/README.md) (getting started, every resource, CLI, async, errors).
+
+Online examples: [docs.synapsai.cloud](https://docs.synapsai.cloud/examples/introduction).
 
 ---
 
@@ -70,7 +72,8 @@ The SDK provides native support for the following SynapsAI Cloud capabilities:
 | Resource | Description |
 | --- | --- |
 | **`models`** | Model management and discovery |
-| **`chat.completions`** | Chat completions and real-time streaming |
+| **`chat.completions`** | Chat completions, streaming, and stored CRUD |
+| **`responses`** | Responses API create / retrieve / delete |
 | **`completions`** | Classic text completions |
 | **`embeddings`** | Text embeddings generation |
 | **`images`** | Image generation and manipulation |
@@ -81,6 +84,29 @@ The SDK provides native support for the following SynapsAI Cloud capabilities:
 | **`feature_extraction`** | Feature extraction pipelines |
 | **`fill_mask`** | Masked Language Modeling (MLM) |
 | **`rerank`** | Text reranking for search optimization |
+| **`vector_stores`** | Vector stores and file ingestion/search |
+| **`model_artifacts`** | Model artifact upload sessions |
+| **`agents`** | Persisted agent runs (AG-UI SSE) |
+
+---
+
+## CLI
+
+After install, the `synapsai` command is available:
+
+```bash
+# Upload a model directory into an existing artifact (default host: upload.synapsai.cloud)
+synapsai upload-model ./my-model --artifact-id artifact-demo-abc12345
+
+# Upload files or directories into a vector store
+synapsai upload-vector-store-files vs_abc123 ./docs ./readme.md
+```
+
+Environment variables:
+
+* `SYNAPSAI_API_KEY` — API key
+* `SYNAPSAI_API_BASE` — Inference/API base (default `https://api.synapsai.cloud/v1`)
+* `SYNAPSAI_UPLOAD_BASE` — Model upload base (default `https://upload.synapsai.cloud/v1`)
 
 ---
 

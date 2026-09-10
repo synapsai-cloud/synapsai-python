@@ -49,12 +49,23 @@ from .resources import (
     AsyncFillMaskResource,
     RerankResource,
     AsyncRerankResource,
+    VectorStoresResource,
+    AsyncVectorStoresResource,
+    ModelArtifactsResource,
+    AsyncModelArtifactsResource,
+    AgentsResource,
+    AsyncAgentsResource,
+    ResponsesResource,
+    AsyncResponsesResource,
 )
 from .exceptions import APIError, AuthenticationError
 from .utils import build_url
 from .logging import get_logger
 
 logger = get_logger(__name__)
+
+DEFAULT_UPLOAD_BASE_URL = "https://upload.synapsai.cloud/v1"
+
 
 class BaseClient:
     """Base client with common functionality"""
@@ -208,6 +219,10 @@ class SynapsAI(BaseClient):
     feature_extraction: FeatureExtractionResource
     fill_mask: FillMaskResource
     rerank: RerankResource
+    vector_stores: VectorStoresResource
+    model_artifacts: ModelArtifactsResource
+    agents: AgentsResource
+    responses: ResponsesResource
 
     def __init__(self, api_key: Optional[str] = None, **kwargs):
         super().__init__(api_key=api_key, **kwargs)
@@ -232,6 +247,10 @@ class SynapsAI(BaseClient):
         self.feature_extraction = FeatureExtractionResource(self)
         self.fill_mask = FillMaskResource(self)
         self.rerank = RerankResource(self)
+        self.vector_stores = VectorStoresResource(self)
+        self.model_artifacts = ModelArtifactsResource(self)
+        self.agents = AgentsResource(self)
+        self.responses = ResponsesResource(self)
 
     def __enter__(self):
         return self
@@ -243,13 +262,56 @@ class SynapsAI(BaseClient):
         """Close the HTTP client"""
         self._client.close()
 
+    def _prepare_request_kwargs(
+        self,
+        method: str,
+        endpoint: str,
+        json_data: Optional[Dict[str, Any]] = None,
+        data: Optional[Any] = None,
+        files: Optional[Any] = None,
+        content: Optional[Any] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
+        stream: bool = False,
+    ) -> Dict[str, Any]:
+        """Build httpx request kwargs, clearing Content-Type for multipart/raw bodies."""
+        url = build_url(self.base_url, endpoint)
+        kwargs: Dict[str, Any] = {
+            "method": method,
+            "url": url,
+            "timeout": self.timeout,
+        }
+        if json_data is not None:
+            kwargs["json"] = json_data
+        if data is not None:
+            kwargs["data"] = data
+        if files is not None:
+            kwargs["files"] = files
+        if content is not None:
+            kwargs["content"] = content
+        if params is not None:
+            kwargs["params"] = params
+        if stream:
+            kwargs["stream"] = True
+
+        request_headers = dict(headers or {})
+        if files is not None or content is not None:
+            # Let httpx set multipart/raw content-type; drop JSON default.
+            request_headers.setdefault("Content-Type", None)
+        if request_headers:
+            kwargs["headers"] = request_headers
+        return kwargs
+
     def _request(
         self,
         method: str,
         endpoint: str,
         json_data: Optional[Dict[str, Any]] = None,
-        data: Optional[Dict[str, Any]] = None,
-        files: Optional[Dict[str, Any]] = None,
+        data: Optional[Any] = None,
+        files: Optional[Any] = None,
+        content: Optional[Any] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
         stream: bool = False,
     ) -> httpx.Response:
         """
@@ -257,24 +319,17 @@ class SynapsAI(BaseClient):
 
         Retries on network errors, timeouts, and server-side errors (429, 5xx).
         """
-        url = build_url(self.base_url, endpoint)
-
-        # prepare kwargs used for every attempt
-        base_kwargs = {
-            "method": method,
-            "url": url,
-            "timeout": self.timeout,
-        }
-
-        if json_data:
-            base_kwargs["json"] = json_data
-        if data:
-            base_kwargs["data"] = data
-        if files:
-            base_kwargs["files"] = files
-        if stream:
-            # note: for streaming we still attempt to (re)establish the stream on failures opening it
-            base_kwargs["stream"] = True
+        base_kwargs = self._prepare_request_kwargs(
+            method=method,
+            endpoint=endpoint,
+            json_data=json_data,
+            data=data,
+            files=files,
+            content=content,
+            params=params,
+            headers=headers,
+            stream=stream,
+        )
 
         attempt = 0
         last_exc: Optional[BaseException] = None
@@ -325,26 +380,71 @@ class SynapsAI(BaseClient):
         self,
         endpoint: str,
         json_data: Optional[Dict[str, Any]] = None,
-        data: Optional[Dict[str, Any]] = None,
-        files: Optional[Dict[str, Any]] = None,
+        data: Optional[Any] = None,
+        files: Optional[Any] = None,
+        content: Optional[Any] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
     ) -> httpx.Response:
         """Make a POST request"""
-        return self._request("POST", endpoint, json_data, data, files)
+        return self._request(
+            "POST",
+            endpoint,
+            json_data=json_data,
+            data=data,
+            files=files,
+            content=content,
+            params=params,
+            headers=headers,
+        )
 
-    def _get(self, endpoint: str) -> httpx.Response:
+    def _put(
+        self,
+        endpoint: str,
+        json_data: Optional[Dict[str, Any]] = None,
+        data: Optional[Any] = None,
+        files: Optional[Any] = None,
+        content: Optional[Any] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
+    ) -> httpx.Response:
+        """Make a PUT request"""
+        return self._request(
+            "PUT",
+            endpoint,
+            json_data=json_data,
+            data=data,
+            files=files,
+            content=content,
+            params=params,
+            headers=headers,
+        )
+
+    def _get(
+        self,
+        endpoint: str,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> httpx.Response:
         """Make a GET request"""
-        return self._request("GET", endpoint)
+        return self._request("GET", endpoint, params=params)
 
-    def _delete(self, endpoint: str) -> httpx.Response:
+    def _delete(
+        self,
+        endpoint: str,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> httpx.Response:
         """Make a DELETE request"""
-        return self._request("DELETE", endpoint)
+        return self._request("DELETE", endpoint, params=params)
 
     def _stream_response(
         self,
         endpoint: str,
         json_data: Optional[Dict[str, Any]] = None,
-        data: Optional[Dict[str, Any]] = None,
-        files: Optional[Dict[str, Any]] = None,
+        data: Optional[Any] = None,
+        files: Optional[Any] = None,
+        content: Optional[Any] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
     ) -> Iterator[Dict[str, Any]]:
         """
         Stream response data from a POST endpoint.
@@ -352,15 +452,16 @@ class SynapsAI(BaseClient):
         The attempt to establish the stream will be retried using the same backoff rules.
         Once the stream is established, streaming errors are raised as-is.
         """
-        url = build_url(self.base_url, endpoint)
-        base_kwargs = {
-            "method": "POST",
-            "url": url,
-            "timeout": self.timeout,
-            "json": json_data,
-            "data": data,
-            "files": files,
-        }
+        base_kwargs = self._prepare_request_kwargs(
+            method="POST",
+            endpoint=endpoint,
+            json_data=json_data,
+            data=data,
+            files=files,
+            content=content,
+            params=params,
+            headers=headers,
+        )
 
         attempt = 0
         while attempt < self.max_retries:
@@ -385,8 +486,10 @@ class SynapsAI(BaseClient):
                         line = line.strip()
                         if not line:
                             continue
-                        if line.startswith("data: "):
-                            data_line = line[6:]  # Remove "data: " prefix
+                        if line.startswith("data:"):
+                            data_line = line[5:]
+                            if data_line.startswith(" "):
+                                data_line = data_line[1:]
                             if data_line == "[DONE]":
                                 return
                             try:
@@ -410,10 +513,10 @@ class SynapsAI(BaseClient):
 
         raise APIError("Failed to establish stream after retries")
 
-    def _get_stream(self, endpoint: str) -> httpx.Response:
+    def _get_stream(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> httpx.Response:
         """Make a streaming GET request for binary content (e.g. video download)."""
         url = build_url(self.base_url, endpoint)
-        request = self._client.build_request("GET", url, timeout=self.timeout)
+        request = self._client.build_request("GET", url, timeout=self.timeout, params=params)
         response = self._client.send(request, stream=True)
         if response.status_code >= 400:
             response.read()
@@ -435,6 +538,10 @@ class AsyncSynapsAI(BaseClient):
     feature_extraction: AsyncFeatureExtractionResource
     fill_mask: AsyncFillMaskResource
     rerank: AsyncRerankResource
+    vector_stores: AsyncVectorStoresResource
+    model_artifacts: AsyncModelArtifactsResource
+    agents: AsyncAgentsResource
+    responses: AsyncResponsesResource
 
     def __init__(self, api_key: Optional[str] = None, **kwargs):
         super().__init__(api_key=api_key, **kwargs)
@@ -458,6 +565,10 @@ class AsyncSynapsAI(BaseClient):
         self.feature_extraction = AsyncFeatureExtractionResource(self)
         self.fill_mask = AsyncFillMaskResource(self)
         self.rerank = AsyncRerankResource(self)
+        self.vector_stores = AsyncVectorStoresResource(self)
+        self.model_artifacts = AsyncModelArtifactsResource(self)
+        self.agents = AsyncAgentsResource(self)
+        self.responses = AsyncResponsesResource(self)
 
     async def __aenter__(self):
         return self
@@ -474,24 +585,23 @@ class AsyncSynapsAI(BaseClient):
         method: str,
         endpoint: str,
         json_data: Optional[Dict[str, Any]] = None,
-        data: Optional[Dict[str, Any]] = None,
-        files: Optional[Dict[str, Any]] = None,
+        data: Optional[Any] = None,
+        files: Optional[Any] = None,
+        content: Optional[Any] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
     ) -> httpx.Response:
         """Make an async request to the API with retries."""
-        url = build_url(self.base_url, endpoint)
-
-        base_kwargs: Dict[str, Any] = {
-            "method": method,
-            "url": url,
-            "timeout": self.timeout,
-        }
-
-        if json_data:
-            base_kwargs["json"] = json_data
-        if data:
-            base_kwargs["data"] = data
-        if files:
-            base_kwargs["files"] = files
+        base_kwargs = self._prepare_request_kwargs(
+            method=method,
+            endpoint=endpoint,
+            json_data=json_data,
+            data=data,
+            files=files,
+            content=content,
+            params=params,
+            headers=headers,
+        )
 
         attempt = 0
         last_exc: Optional[BaseException] = None
@@ -536,26 +646,71 @@ class AsyncSynapsAI(BaseClient):
         self,
         endpoint: str,
         json_data: Optional[Dict[str, Any]] = None,
-        data: Optional[Dict[str, Any]] = None,
-        files: Optional[Dict[str, Any]] = None,
+        data: Optional[Any] = None,
+        files: Optional[Any] = None,
+        content: Optional[Any] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
     ) -> httpx.Response:
         """Make an async POST request"""
-        return await self._request("POST", endpoint, json_data, data, files)
+        return await self._request(
+            "POST",
+            endpoint,
+            json_data=json_data,
+            data=data,
+            files=files,
+            content=content,
+            params=params,
+            headers=headers,
+        )
 
-    async def _get(self, endpoint: str) -> httpx.Response:
+    async def _put(
+        self,
+        endpoint: str,
+        json_data: Optional[Dict[str, Any]] = None,
+        data: Optional[Any] = None,
+        files: Optional[Any] = None,
+        content: Optional[Any] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
+    ) -> httpx.Response:
+        """Make an async PUT request"""
+        return await self._request(
+            "PUT",
+            endpoint,
+            json_data=json_data,
+            data=data,
+            files=files,
+            content=content,
+            params=params,
+            headers=headers,
+        )
+
+    async def _get(
+        self,
+        endpoint: str,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> httpx.Response:
         """Make a GET request"""
-        return await self._request("GET", endpoint=endpoint)
+        return await self._request("GET", endpoint=endpoint, params=params)
 
-    async def _delete(self, endpoint: str) -> httpx.Response:
+    async def _delete(
+        self,
+        endpoint: str,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> httpx.Response:
         """Make a DELETE request"""
-        return await self._request("DELETE", endpoint=endpoint)
+        return await self._request("DELETE", endpoint=endpoint, params=params)
 
     async def _stream_response(
         self,
         endpoint: str,
         json_data: Optional[Dict[str, Any]] = None,
-        data: Optional[Dict[str, Any]] = None,
-        files: Optional[Dict[str, Any]] = None,
+        data: Optional[Any] = None,
+        files: Optional[Any] = None,
+        content: Optional[Any] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, Any]] = None,
     ) -> AsyncIterator[Dict[str, Any]]:
         """
         Stream response data from a POST endpoint (async).
@@ -563,16 +718,16 @@ class AsyncSynapsAI(BaseClient):
         The attempt to establish the stream will be retried using the same backoff rules.
         Once the stream is established, streaming errors are raised as-is.
         """
-        url = build_url(self.base_url, endpoint)
-
-        base_kwargs = {
-            "method": "POST",
-            "url": url,
-            "timeout": self.timeout,
-            "json": json_data,
-            "data": data,
-            "files": files,
-        }
+        base_kwargs = self._prepare_request_kwargs(
+            method="POST",
+            endpoint=endpoint,
+            json_data=json_data,
+            data=data,
+            files=files,
+            content=content,
+            params=params,
+            headers=headers,
+        )
 
         attempt = 0
         while attempt < self.max_retries:
@@ -595,8 +750,10 @@ class AsyncSynapsAI(BaseClient):
                         line = raw_line.strip()
                         if not line:
                             continue
-                        if line.startswith("data: "):
-                            data_line = line[6:]  # Remove "data: " prefix
+                        if line.startswith("data:"):
+                            data_line = line[5:]
+                            if data_line.startswith(" "):
+                                data_line = data_line[1:]
                             if data_line == "[DONE]":
                                 return
                             try:
@@ -617,10 +774,14 @@ class AsyncSynapsAI(BaseClient):
 
         raise APIError("Failed to establish stream after retries")
 
-    async def _get_stream(self, endpoint: str) -> httpx.Response:
+    async def _get_stream(
+        self,
+        endpoint: str,
+        params: Optional[Dict[str, Any]] = None,
+    ) -> httpx.Response:
         """Make an async streaming GET request for binary content (e.g. video download)."""
         url = build_url(self.base_url, endpoint)
-        request = self._client.build_request("GET", url, timeout=self.timeout)
+        request = self._client.build_request("GET", url, timeout=self.timeout, params=params)
         response = await self._client.send(request, stream=True)
         if response.status_code >= 400:
             await response.aread()

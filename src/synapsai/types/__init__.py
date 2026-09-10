@@ -28,6 +28,10 @@ from .models import *
 from .feature_extraction import *
 from .fill_mask import *
 from .rerank import *
+from .vector_stores import *
+from .model_artifacts import *
+from .agents import *
+from .responses import *
 
 __all__ = [
     # Models types
@@ -38,6 +42,8 @@ __all__ = [
     "ChatCompletionRequest",
     "ChatCompletionResponse",
     "ChatCompletionChunk",
+    "ChatCompletionList",
+    "ChatCompletionDeleted",
     "ChatMessage",
     "ChatRole",
     "ReasoningEffort",
@@ -136,7 +142,40 @@ __all__ = [
     "RerankRequest",
     "RerankResult",
     "RerankResponse",
-    
+
+    # Vector store types
+    "VectorStore",
+    "VectorStoreList",
+    "VectorStoreDeleted",
+    "VectorStoreFileCounts",
+    "VectorStoreSearchResult",
+    "VectorStoreSearchResults",
+    "VectorStoreFile",
+    "VectorStoreFileList",
+    "VectorStoreFileDeleted",
+    "VectorStoreFileContent",
+    "VectorStoreFileError",
+
+    # Model artifact types
+    "ModelArtifact",
+    "ModelArtifactResponse",
+    "ModelArtifactUploadSession",
+    "ModelArtifactFileUpload",
+
+    # Agent types
+    "AgentMessage",
+    "AgentTool",
+    "AgentContext",
+    "AgentRunInput",
+    "AgentEvent",
+
+    # Responses API types
+    "Response",
+    "ResponseDeleted",
+    "ResponseStreamEvent",
+    "ResponseUsage",
+    "ResponseInput",
+
     # Common types
     "APIResponse",
     "Error",

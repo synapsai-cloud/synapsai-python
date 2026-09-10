@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="synapsai-python",
-    version="0.1.0",
+    version="0.1.1",
     description="The official SynapsAI Cloud Python SDK",
     long_description=open("README.md", "r", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
@@ -23,5 +23,11 @@ setup(
         "pydantic>=2.0,<3",
         "typing-extensions>=4.5",
         "Pillow>=12.2.0",
+        "click>=8.0",
     ],
+    entry_points={
+        "console_scripts": [
+            "synapsai=synapsai.cli:main",
+        ],
+    },
 )

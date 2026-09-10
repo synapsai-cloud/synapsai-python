@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "synapsai-python"
-version = "0.1.0"
+version = "0.1.1"
 description = "The official SynapsAI Cloud Python SDK"
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.8"
@@ -24,7 +24,11 @@ dependencies = [
     "pydantic>=2.0,<3",
     "typing-extensions>=4.5",
     "Pillow>=12.2.0",
+    "click>=8.0",
 ]
+
+[project.scripts]
+synapsai = "synapsai.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/synapsai-cloud/synapsai-python"

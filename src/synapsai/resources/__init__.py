@@ -28,6 +28,15 @@ from .models import ModelsResource, AsyncModelsResource
 from .feature_extraction import FeatureExtractionResource, AsyncFeatureExtractionResource
 from .fill_mask import FillMaskResource, AsyncFillMaskResource
 from .rerank import RerankResource, AsyncRerankResource
+from .vector_stores import (
+    VectorStoresResource,
+    AsyncVectorStoresResource,
+    VectorStoreFilesResource,
+    AsyncVectorStoreFilesResource,
+)
+from .model_artifacts import ModelArtifactsResource, AsyncModelArtifactsResource
+from .agents import AgentsResource, AsyncAgentsResource
+from .responses import ResponsesResource, AsyncResponsesResource
 
 __all__ = [
     "ChatResource",
@@ -56,4 +65,14 @@ __all__ = [
     "AsyncFillMaskResource",
     "RerankResource",
     "AsyncRerankResource",
+    "VectorStoresResource",
+    "AsyncVectorStoresResource",
+    "VectorStoreFilesResource",
+    "AsyncVectorStoreFilesResource",
+    "ModelArtifactsResource",
+    "AsyncModelArtifactsResource",
+    "AgentsResource",
+    "AsyncAgentsResource",
+    "ResponsesResource",
+    "AsyncResponsesResource",
 ]

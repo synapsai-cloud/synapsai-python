@@ -206,13 +206,36 @@ class CompletionChoice(BaseModel):
 
 class ChatCompletionResponse(APIResponse):
     """Chat completion response"""
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="allow")
 
     model: str
     object: str
     choices: List[ChatCompletionChoice]
     system_fingerprint: Optional[str] = None
     usage: Optional[Usage] = None
+    metadata: Optional[Dict[str, Any]] = None
+
+
+class ChatCompletionList(BaseModel):
+    """Paginated list of stored chat completions."""
+
+    model_config = ConfigDict(extra="allow")
+
+    object: Literal["list"] = "list"
+    data: List[ChatCompletionResponse] = Field(default_factory=list)
+    first_id: Optional[str] = None
+    last_id: Optional[str] = None
+    has_more: bool = False
+
+
+class ChatCompletionDeleted(BaseModel):
+    """Confirmation after deleting a stored chat completion."""
+
+    model_config = ConfigDict(extra="allow")
+
+    id: str
+    object: Literal["chat.completion.deleted"] = "chat.completion.deleted"
+    deleted: bool = True
 
 
 class CompletionResponse(APIResponse):
@@ -226,7 +249,7 @@ class CompletionResponse(APIResponse):
 
 class ChatCompletionChunk(APIResponse):
     """Chat completion chunk for streaming"""
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="allow")
 
     model: str
     object: str
