@@ -12,10 +12,9 @@ synapsai --version
 | Variable | Used by |
 | --- | --- |
 | `SYNAPSAI_API_KEY` | All commands (or pass `--api-key`) |
-| `SYNAPSAI_UPLOAD_BASE` | `upload-model` host default |
-| `SYNAPSAI_API_BASE` | Vector store uploads when `--host` omitted |
+| `SYNAPSAI_API_BASE` | API host when `--host` is omitted. Default `https://api.synapsai.cloud/v1` |
 
-Hosts may be given as `upload.synapsai.cloud` or a full URL; the CLI normalizes to `https://…/v1`.
+A host may be a hostname or a full URL. The CLI normalizes it to `https://…/v1`.
 
 ---
 
@@ -34,7 +33,6 @@ synapsai upload-model ./my-model --artifact-id artifact-demo-abc12345
 
 synapsai upload-model ./model.safetensors \
   --artifact-id artifact-demo-abc12345 \
-  --host upload.synapsai.cloud \
   --timeout 7200
 ```
 
@@ -42,7 +40,7 @@ synapsai upload-model ./model.safetensors \
 | --- | --- | --- |
 | `PATH` | yes | file or directory |
 | `--artifact-id` | yes | — |
-| `--host` | no | `SYNAPSAI_UPLOAD_BASE` or `https://upload.synapsai.cloud/v1` |
+| `--host` | no | `SYNAPSAI_API_BASE` or `https://api.synapsai.cloud/v1` |
 | `--api-key` | no | `SYNAPSAI_API_KEY` |
 | `--timeout` | no | `3600` |
 

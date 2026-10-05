@@ -95,7 +95,7 @@ The SDK provides native support for the following SynapsAI Cloud capabilities:
 After install, the `synapsai` command is available:
 
 ```bash
-# Upload a model directory into an existing artifact (default host: upload.synapsai.cloud)
+# Upload a model directory into an existing artifact
 synapsai upload-model ./my-model --artifact-id artifact-demo-abc12345
 
 # Upload files or directories into a vector store
@@ -105,8 +105,7 @@ synapsai upload-vector-store-files vs_abc123 ./docs ./readme.md
 Environment variables:
 
 * `SYNAPSAI_API_KEY` — API key
-* `SYNAPSAI_API_BASE` — Inference/API base (default `https://api.synapsai.cloud/v1`)
-* `SYNAPSAI_UPLOAD_BASE` — Model upload base (default `https://upload.synapsai.cloud/v1`)
+* `SYNAPSAI_API_BASE` — API base URL (default `https://api.synapsai.cloud/v1`)
 
 ---
 

@@ -22,7 +22,7 @@ from typing import List, Optional
 
 import click
 
-from .client import DEFAULT_UPLOAD_BASE_URL, SynapsAI
+from .client import SynapsAI
 from .exceptions import APIError
 
 
@@ -56,7 +56,7 @@ def main() -> None:
 @click.option(
     "--host",
     default=None,
-    help=f"Upload host (default: {DEFAULT_UPLOAD_BASE_URL} or SYNAPSAI_UPLOAD_BASE).",
+    help="API host (default: SYNAPSAI_API_BASE or https://api.synapsai.cloud/v1).",
 )
 @click.option("--api-key", default=None, help="API key (default: SYNAPSAI_API_KEY).")
 @click.option("--timeout", default=3600.0, show_default=True, type=float, help="Request timeout seconds.")
@@ -67,16 +67,14 @@ def upload_model(
     api_key: Optional[str],
     timeout: float,
 ) -> None:
-    """Upload model files into an existing artifact on the upload API.
+    """Upload model files into an existing artifact on the API.
 
     PATH may be a single file or a directory of model weights/config files.
     Starts an upload session, streams files, then completes ingest.
+    Uses the same host as the rest of the API (``SYNAPSAI_API_BASE`` or
+    ``https://api.synapsai.cloud/v1``).
     """
-    base_url = _normalize_base_url(
-        host
-        or os.environ.get("SYNAPSAI_UPLOAD_BASE")
-        or DEFAULT_UPLOAD_BASE_URL
-    )
+    base_url = _normalize_base_url(host) if host else None
     client = SynapsAI(api_key=_resolve_api_key(api_key), base_url=base_url, timeout=timeout)
 
     def on_progress(relative: str, index: int, total: int) -> None:

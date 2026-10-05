@@ -45,5 +45,4 @@ Official docs for [`synapsai-python`](https://github.com/synapsai-cloud/synapsai
 ## Quick links
 
 - Default API base: `https://api.synapsai.cloud/v1`
-- Default upload base: `https://upload.synapsai.cloud/v1`
 - Package: `pip install synapsai-python`

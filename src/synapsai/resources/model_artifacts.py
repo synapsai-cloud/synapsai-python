@@ -48,7 +48,7 @@ def _iter_upload_files(root: Path) -> List[Tuple[str, Path]]:
 
 
 class ModelArtifactsResource:
-    """Upload files into an existing model artifact on the infra upload API."""
+    """Upload files into an existing model artifact on the client API host."""
 
     def __init__(self, client: "SynapsAI"):
         self._client = client
@@ -110,7 +110,7 @@ class ModelArtifactsResource:
 
         Starts an upload session, streams every file under ``path``
         (file or directory), then completes the session — matching
-        ``/uploads`` → ``/files`` → ``/complete`` on the upload API.
+        ``/uploads`` → ``/files`` → ``/complete`` on the client base URL.
         """
         root = Path(path).expanduser().resolve()
         files = _iter_upload_files(root)
@@ -191,7 +191,7 @@ class AsyncModelArtifactsResource:
 
         Starts an upload session, streams every file under ``path``
         (file or directory), then completes the session — matching
-        ``/uploads`` → ``/files`` → ``/complete`` on the upload API.
+        ``/uploads`` → ``/files`` → ``/complete`` on the client base URL.
         """
         root = Path(path).expanduser().resolve()
         files = _iter_upload_files(root)

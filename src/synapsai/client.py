@@ -64,7 +64,7 @@ from .logging import get_logger
 
 logger = get_logger(__name__)
 
-DEFAULT_UPLOAD_BASE_URL = "https://upload.synapsai.cloud/v1"
+DEFAULT_BASE_URL = "https://api.synapsai.cloud/v1"
 
 
 class BaseClient:
@@ -102,7 +102,7 @@ class BaseClient:
             base_url = os.environ.get("SYNAPSAI_API_BASE")
 
         if base_url is None:
-            base_url = "https://api.synapsai.cloud/v1"
+            base_url = DEFAULT_BASE_URL
 
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")

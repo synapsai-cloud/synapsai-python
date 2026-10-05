@@ -21,8 +21,7 @@ Optional:
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `SYNAPSAI_API_KEY` | — | Bearer token |
-| `SYNAPSAI_API_BASE` | `https://api.synapsai.cloud/v1` | Inference / vector stores / agents |
-| `SYNAPSAI_UPLOAD_BASE` | `https://upload.synapsai.cloud/v1` | Model artifact uploads (CLI) |
+| `SYNAPSAI_API_BASE` | `https://api.synapsai.cloud/v1` | API base URL |
 
 ## Create a client
 
@@ -35,19 +34,13 @@ client = SynapsAI()  # uses SYNAPSAI_API_KEY
 Or explicitly:
 
 ```python
-from synapsai import SynapsAI, DEFAULT_UPLOAD_BASE_URL
+from synapsai import SynapsAI
 
 client = SynapsAI(
     api_key="synapsai-...",
     base_url="https://api.synapsai.cloud/v1",
     timeout=300.0,
     max_retries=1,
-)
-
-upload_client = SynapsAI(
-    api_key="synapsai-...",
-    base_url=DEFAULT_UPLOAD_BASE_URL,
-    timeout=3600.0,
 )
 ```
 

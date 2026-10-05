@@ -2,17 +2,12 @@
 
 `client.model_artifacts`
 
-Upload model weight/config files into an **existing** artifact on the infra upload API.
-
-## Host
-
-Use the upload base URL (not the inference API):
+Upload model weight/config files into an **existing** artifact. Requests go to `https://api.synapsai.cloud/v1/model-artifacts`.
 
 ```python
-from synapsai import SynapsAI, DEFAULT_UPLOAD_BASE_URL
+from synapsai import SynapsAI
 
-client = SynapsAI(base_url=DEFAULT_UPLOAD_BASE_URL)
-# DEFAULT_UPLOAD_BASE_URL == "https://upload.synapsai.cloud/v1"
+client = SynapsAI()
 ```
 
 Your API key must include upload permission.
@@ -35,9 +30,9 @@ Artifacts are normally created in the SynapsAI console (or via `create`). File u
 Accepts a **single file** or a **directory**.
 
 ```python
-from synapsai import SynapsAI, DEFAULT_UPLOAD_BASE_URL
+from synapsai import SynapsAI
 
-client = SynapsAI(base_url=DEFAULT_UPLOAD_BASE_URL, timeout=3600.0)
+client = SynapsAI(timeout=3600.0)
 
 def on_progress(relative_path, index, total):
     print(f"[{index}/{total}] {relative_path}")
@@ -93,6 +88,6 @@ synapsai upload-model ./my-model --artifact-id artifact-demo-abc12345
 synapsai upload-model ./model.safetensors --artifact-id artifact-demo-abc12345
 ```
 
-Defaults to `https://upload.synapsai.cloud/v1`. Override with `--host` or `SYNAPSAI_UPLOAD_BASE`.
+Uses `https://api.synapsai.cloud/v1`, or `SYNAPSAI_API_BASE` when that variable is set.
 
 See [CLI](cli.md).

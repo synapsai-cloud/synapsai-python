@@ -2,7 +2,7 @@
 
 `client.vector_stores` and `client.vector_stores.files`
 
-OpenAI-compatible vector store API backed by SynapsAI knowledge bases. Uses the normal API host (`https://api.synapsai.cloud/v1`), not the upload host.
+OpenAI-compatible vector store API backed by SynapsAI knowledge bases. Uses `https://api.synapsai.cloud/v1`.
 
 Your API key needs vector-store permissions.
 

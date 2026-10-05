@@ -76,6 +76,6 @@ async with AsyncSynapsAI() as client:
 
 ## Notes
 
-- Auth uses your normal API key against the inference host.
+- Auth uses your API key.
 - Nested model calls from the agent go through `/v1/chat/completions` for billing and tracing.
 - See also [Chat](chat.md) and [Vector stores](vector-stores.md) for the building blocks agents use.
