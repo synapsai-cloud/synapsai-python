@@ -21,8 +21,8 @@ pip install --upgrade synapsai-python
 * `httpx` >= 0.23.0, < 1.0.0
 * `pydantic` >= 2.0, < 3
 * `typing-extensions` >= 4.5, < 5
-* `Pillow` >= 9.5.0, < 11
-* `numpy` >= 1.21.0, < 2
+* `Pillow` >= 12.2.0
+* `click` >= 8.0
 
 ---
 
