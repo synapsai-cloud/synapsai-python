@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING, Any, AsyncIterator, Dict, Iterator, List, Opti
 
 from ..exceptions import APIError
 from ..logging import get_logger
-from ..types.agents import AgentEvent, AgentMessage
+from ..types.agents import AgentEvent, AgentMessage, AgentRun, DeletedAgent, DeletedAgentRun
 
 if TYPE_CHECKING:
     from ..client import AsyncSynapsAI, SynapsAI
@@ -93,11 +93,80 @@ def _build_run_payload(
     return payload
 
 
+def _parse_agent_event(event_data: Any, *, agent_id: str) -> Optional[AgentEvent]:
+    try:
+        error = event_data.get("error") if isinstance(event_data, dict) else None
+        if error and not event_data.get("type"):
+            raise APIError(error if isinstance(error, str) else str(error))
+        return AgentEvent.model_validate(event_data)
+    except APIError:
+        raise
+    except Exception:
+        logger.warning(
+            "Failed to parse agent event",
+            exc_info=True,
+            extra={"agent_id": agent_id},
+        )
+        return None
+
+
+def _resume_params(after: int) -> Dict[str, int]:
+    if after < 0:
+        raise ValueError("after must be >= 0")
+    return {"after": after}
+
+
+class AgentRunsResource:
+    """Get, resume, and delete one agent run."""
+
+    def __init__(self, client: "SynapsAI"):
+        self._client = client
+
+    def retrieve(self, agent_id: str, run_id: str) -> AgentRun:
+        """Return status and events for ``GET /v1/agent/{agent_id}/runs/{run_id}``."""
+        response = self._client._get(f"agent/{agent_id}/runs/{run_id}")
+        return AgentRun.model_validate(response.json())
+
+    def delete(self, agent_id: str, run_id: str) -> DeletedAgentRun:
+        """Stop a live run and delete it. ``DELETE /v1/agent/{agent_id}/runs/{run_id}``."""
+        response = self._client._delete(f"agent/{agent_id}/runs/{run_id}")
+        return DeletedAgentRun.model_validate(response.json())
+
+    def stream(
+        self,
+        agent_id: str,
+        run_id: str,
+        *,
+        after: int = 0,
+    ) -> Iterator[AgentEvent]:
+        """
+        Resume ``GET /v1/agent/{agent_id}/runs/{run_id}/stream``.
+
+        ``after`` is the last ``seq`` already applied. A finished stored run
+        replays and the iterator ends. With store requests off, a finished run
+        is no longer available.
+        """
+        for event_data in self._client._stream_response(
+            f"agent/{agent_id}/runs/{run_id}/stream",
+            params=_resume_params(after),
+            method="GET",
+        ):
+            event = _parse_agent_event(event_data, agent_id=agent_id)
+            if event is not None:
+                yield event
+
+
 class AgentsResource:
     """Run persisted SynapsAI agents via the AG-UI SSE endpoint."""
 
     def __init__(self, client: "SynapsAI"):
         self._client = client
+        self.runs = AgentRunsResource(client)
+
+    def delete(self, agent_id: str) -> DeletedAgent:
+        """Delete a saved agent and its runs. ``DELETE /v1/agent/{agent_id}``."""
+        response = self._client._delete(f"agent/{agent_id}")
+        return DeletedAgent.model_validate(response.json())
 
     def run(
         self,
@@ -134,20 +203,40 @@ class AgentsResource:
             **kwargs,
         )
         for event_data in self._client._stream_response(f"agent/{agent_id}/run", json_data=payload):
-            try:
-                error = event_data.get("error") if isinstance(event_data, dict) else None
-                if error and not event_data.get("type"):
-                    raise APIError(error if isinstance(error, str) else str(error))
-                yield AgentEvent.model_validate(event_data)
-            except APIError:
-                raise
-            except Exception:
-                logger.warning(
-                    "Failed to parse agent event",
-                    exc_info=True,
-                    extra={"agent_id": agent_id},
-                )
-                continue
+            event = _parse_agent_event(event_data, agent_id=agent_id)
+            if event is not None:
+                yield event
+
+
+class AsyncAgentRunsResource:
+    """Async get, resume, and delete for one agent run."""
+
+    def __init__(self, client: "AsyncSynapsAI"):
+        self._client = client
+
+    async def retrieve(self, agent_id: str, run_id: str) -> AgentRun:
+        response = await self._client._get(f"agent/{agent_id}/runs/{run_id}")
+        return AgentRun.model_validate(response.json())
+
+    async def delete(self, agent_id: str, run_id: str) -> DeletedAgentRun:
+        response = await self._client._delete(f"agent/{agent_id}/runs/{run_id}")
+        return DeletedAgentRun.model_validate(response.json())
+
+    async def stream(
+        self,
+        agent_id: str,
+        run_id: str,
+        *,
+        after: int = 0,
+    ) -> AsyncIterator[AgentEvent]:
+        async for event_data in self._client._stream_response(
+            f"agent/{agent_id}/runs/{run_id}/stream",
+            params=_resume_params(after),
+            method="GET",
+        ):
+            event = _parse_agent_event(event_data, agent_id=agent_id)
+            if event is not None:
+                yield event
 
 
 class AsyncAgentsResource:
@@ -155,6 +244,11 @@ class AsyncAgentsResource:
 
     def __init__(self, client: "AsyncSynapsAI"):
         self._client = client
+        self.runs = AsyncAgentRunsResource(client)
+
+    async def delete(self, agent_id: str) -> DeletedAgent:
+        response = await self._client._delete(f"agent/{agent_id}")
+        return DeletedAgent.model_validate(response.json())
 
     async def run(
         self,
@@ -187,17 +281,6 @@ class AsyncAgentsResource:
             f"agent/{agent_id}/run",
             json_data=payload,
         ):
-            try:
-                error = event_data.get("error") if isinstance(event_data, dict) else None
-                if error and not event_data.get("type"):
-                    raise APIError(error if isinstance(error, str) else str(error))
-                yield AgentEvent.model_validate(event_data)
-            except APIError:
-                raise
-            except Exception:
-                logger.warning(
-                    "Failed to parse agent event",
-                    exc_info=True,
-                    extra={"agent_id": agent_id},
-                )
-                continue
+            event = _parse_agent_event(event_data, agent_id=agent_id)
+            if event is not None:
+                yield event

@@ -14,7 +14,7 @@
 
 """AG-UI agent run type definitions."""
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -69,6 +69,7 @@ class AgentEvent(BaseModel):
     model_config = ConfigDict(extra="allow", populate_by_name=True)
 
     type: str
+    seq: Optional[int] = None
     thread_id: Optional[str] = Field(default=None, alias="threadId")
     run_id: Optional[str] = Field(default=None, alias="runId")
     message_id: Optional[str] = Field(default=None, alias="messageId")
@@ -78,3 +79,41 @@ class AgentEvent(BaseModel):
     tool_call_name: Optional[str] = Field(default=None, alias="toolCallName")
     content: Optional[Any] = None
     message: Optional[str] = None
+
+
+class AgentRun(BaseModel):
+    """Snapshot from GET /v1/agent/{agent_id}/runs/{run_id}."""
+
+    model_config = ConfigDict(extra="allow")
+
+    id: str
+    object: Literal["agent.run"] = "agent.run"
+    agent_id: str
+    thread_id: Optional[str] = None
+    status: Literal["running", "finished", "error", "cancelled"]
+    events: List[AgentEvent] = Field(default_factory=list)
+    error_message: Optional[str] = None
+    request: Optional[Any] = None
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+    finished_at: Optional[str] = None
+
+
+class DeletedAgent(BaseModel):
+    """Result of DELETE /v1/agent/{agent_id}."""
+
+    model_config = ConfigDict(extra="allow")
+
+    id: str
+    object: Literal["agent.deleted"] = "agent.deleted"
+    deleted: bool = True
+
+
+class DeletedAgentRun(BaseModel):
+    """Result of DELETE /v1/agent/{agent_id}/runs/{run_id}."""
+
+    model_config = ConfigDict(extra="allow")
+
+    id: str
+    object: Literal["agent.run.deleted"] = "agent.run.deleted"
+    deleted: bool = True

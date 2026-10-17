@@ -25,31 +25,50 @@ for event in client.agents.run(
         print("\nDone.")
 ```
 
-## Message formats
+## Send a list of messages
 
-`messages` accepts:
-
-- plain strings (treated as `user` messages with generated ids)
-- dicts (`role` required; `content` required unless `assistant`)
-- `AgentMessage` models
+`messages` accepts a string, a list of strings, or a list of message objects (`role` required; `content` required unless `assistant`).
 
 ```python
-from synapsai.types import AgentMessage
-
-events = client.agents.run(
+for event in client.agents.run(
     "agt_your_agent_id",
     messages=[
         {"id": "m1", "role": "user", "content": "Summarize the latest doc"},
-        AgentMessage(id="m2", role="user", content="Keep it short"),
+        {"id": "m2", "role": "assistant", "content": "The latest doc covers billing and API keys."},
+        {"id": "m3", "role": "user", "content": "Keep it short"},
     ],
-    thread_id="thread-optional",
-    run_id="run-optional",
-    state={"max_steps": 12},  # optional overrides allowed by the server
-    forwarded_props={"store": True},
-)
+):
+    if event.type == "TEXT_MESSAGE_CONTENT" and event.delta:
+        print(event.delta, end="", flush=True)
 ```
 
-If `thread_id` / `run_id` are omitted, UUIDs are generated.
+If `thread_id` / `run_id` are omitted, UUIDs are generated. Pass `run_id` yourself when you need to resume. `state` may set `max_steps` and `compress_context` for that run.
+
+Closing the connection does not stop the run. Resume it on the server that is still running it. When the run ends, the in-memory copy is dropped. A later fetch works only if **Store requests** was on for that agent or model.
+
+## Resume, fetch, and delete
+
+```python
+run_id = "run-1"
+
+for event in client.agents.runs.stream("agt_your_agent_id", run_id, after=0):
+    print(event.seq, event.type)
+
+snapshot = client.agents.runs.retrieve("agt_your_agent_id", run_id)
+print(snapshot.status, len(snapshot.events))
+
+client.agents.runs.delete("agt_your_agent_id", run_id)
+client.agents.delete("agt_your_agent_id")
+```
+
+| Method | Endpoint |
+| --- | --- |
+| `agents.runs.retrieve` | `GET /v1/agent/{agent_id}/runs/{run_id}` |
+| `agents.runs.stream` | `GET /v1/agent/{agent_id}/runs/{run_id}/stream?after=` |
+| `agents.runs.delete` | `DELETE /v1/agent/{agent_id}/runs/{run_id}` |
+| `agents.delete` | `DELETE /v1/agent/{agent_id}` |
+
+`after` is the last `seq` you already applied. Each event on the snapshot includes `seq`. A finished run replays from the data store and the stream ends. With store requests off, that run is gone.
 
 ## Event types
 

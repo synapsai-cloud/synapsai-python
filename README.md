@@ -86,7 +86,7 @@ The SDK provides native support for the following SynapsAI Cloud capabilities:
 | **`rerank`** | Text reranking for search optimization |
 | **`vector_stores`** | Vector stores and file ingestion/search |
 | **`model_artifacts`** | Model artifact upload sessions |
-| **`agents`** | Persisted agent runs (AG-UI SSE) |
+| **`agents`** | Persisted agent runs, resume, and delete (AG-UI SSE) |
 
 ---
 

@@ -168,6 +168,9 @@ __all__ = [
     "AgentContext",
     "AgentRunInput",
     "AgentEvent",
+    "AgentRun",
+    "DeletedAgent",
+    "DeletedAgentRun",
 
     # Responses API types
     "Response",

@@ -445,15 +445,16 @@ class SynapsAI(BaseClient):
         content: Optional[Any] = None,
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
+        method: str = "POST",
     ) -> Iterator[Dict[str, Any]]:
         """
-        Stream response data from a POST endpoint.
+        Stream Server-Sent Events from ``method`` (POST by default).
 
         The attempt to establish the stream will be retried using the same backoff rules.
         Once the stream is established, streaming errors are raised as-is.
         """
         base_kwargs = self._prepare_request_kwargs(
-            method="POST",
+            method=method,
             endpoint=endpoint,
             json_data=json_data,
             data=data,
@@ -469,7 +470,7 @@ class SynapsAI(BaseClient):
                 with self._client.stream(**base_kwargs) as response:
                     if response.status_code >= 400:
                         # decide whether to retry establishing stream
-                        if self._should_retry("POST", response, None, attempt) and attempt < (self.max_retries - 1):
+                        if self._should_retry(method, response, None, attempt) and attempt < (self.max_retries - 1):
                             try:
                                 response.read()
                             except Exception:
@@ -711,15 +712,16 @@ class AsyncSynapsAI(BaseClient):
         content: Optional[Any] = None,
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
+        method: str = "POST",
     ) -> AsyncIterator[Dict[str, Any]]:
         """
-        Stream response data from a POST endpoint (async).
+        Stream Server-Sent Events from ``method`` (POST by default).
 
         The attempt to establish the stream will be retried using the same backoff rules.
         Once the stream is established, streaming errors are raised as-is.
         """
         base_kwargs = self._prepare_request_kwargs(
-            method="POST",
+            method=method,
             endpoint=endpoint,
             json_data=json_data,
             data=data,
@@ -734,7 +736,7 @@ class AsyncSynapsAI(BaseClient):
             try:
                 async with self._client.stream(**base_kwargs) as response:
                     if response.status_code >= 400:
-                        if self._should_retry("POST", response, None, attempt) and attempt < (self.max_retries - 1):
+                        if self._should_retry(method, response, None, attempt) and attempt < (self.max_retries - 1):
                             try:
                                 await response.aread()
                             except Exception:

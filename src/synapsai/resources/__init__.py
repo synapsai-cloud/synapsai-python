@@ -35,7 +35,7 @@ from .vector_stores import (
     AsyncVectorStoreFilesResource,
 )
 from .model_artifacts import ModelArtifactsResource, AsyncModelArtifactsResource
-from .agents import AgentsResource, AsyncAgentsResource
+from .agents import AgentsResource, AsyncAgentsResource, AgentRunsResource, AsyncAgentRunsResource
 from .responses import ResponsesResource, AsyncResponsesResource
 
 __all__ = [
@@ -73,6 +73,8 @@ __all__ = [
     "AsyncModelArtifactsResource",
     "AgentsResource",
     "AsyncAgentsResource",
+    "AgentRunsResource",
+    "AsyncAgentRunsResource",
     "ResponsesResource",
     "AsyncResponsesResource",
 ]
