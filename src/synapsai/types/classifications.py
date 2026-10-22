@@ -19,7 +19,6 @@ Classification type definitions
 from typing import Optional, Dict, Any, Union, List, Literal
 from pydantic import BaseModel, Field, ConfigDict
 from enum import Enum
-from numpy import ndarray
 from PIL.Image import Image as PilImage
 
 from .common import APIResponse, Usage
@@ -34,7 +33,7 @@ class AudioClassificationData(BaseModel):
 class AudioClassificationRequest(BaseModel):
     """Request model for audio classification"""
     model: str
-    inputs: Union[ndarray, bytes, Dict[str, Any]] = Field(..., description="The audio data to classify. Can be raw waveform, bytes from an audio file, or a dict with sampling rate and raw audio.")
+    inputs: Union[List[float], bytes, Dict[str, Any]] = Field(..., description="The audio data to classify. Can be a raw waveform as a list of samples, bytes from an audio file, or a dict with sampling rate and raw audio.")
     top_k: Optional[int] = Field(default=None, description="The number of top labels that will be returned by the pipeline.")
     function_to_apply: Optional[Literal['sigmoid','softmax','none']] = Field(default=None, description="The function to apply to the model outputs to retrieve scores. Valid: 'sigmoid', 'softmax', 'none'.")
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -150,7 +149,7 @@ class ZeroShotAudioClassificationData(BaseModel):
 class ZeroShotAudioClassificationRequest(BaseModel):
     """Request model for zero-shot audio classification"""
     model: str
-    audios: Union[ndarray, List[ndarray]] = Field(..., description="An audio loaded in numpy. Accepts a single array or a list of arrays.")
+    audios: Union[List[float], List[List[float]]] = Field(..., description="Audio waveform samples. Accepts a single waveform or a list of waveforms.")
     candidate_labels: List[str] = Field(..., description="The candidate labels for this audio.")
     hypothesis_template: Optional[str] = Field(default="This is a sound of {}", description="Template used with candidate labels.")
     model_config = ConfigDict(arbitrary_types_allowed=True)

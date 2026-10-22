@@ -30,7 +30,6 @@ from ..types.classifications import (
     ZeroShotObjectDetectionResponse,
 )
 from PIL import Image
-import numpy as np
 from ..processing import process_image_input, process_audio_input, process_video_input
 
 
@@ -123,7 +122,7 @@ class ClassificationsResource:
     def audio(
         self,
         model: str,
-        inputs: Union[np.ndarray, bytes, dict], 
+        inputs: Union[list[float], bytes, dict], 
         top_k: Optional[int] = None, 
         function_to_apply: Optional[str] = None,
     ) -> AudioClassificationResponse:
@@ -332,7 +331,7 @@ class AsyncClassificationsResource:
     async def audio(
         self,
         model: str,
-        inputs: Union[np.ndarray, bytes, dict], 
+        inputs: Union[list[float], bytes, dict], 
         top_k: Optional[int] = None, 
         function_to_apply: Optional[str] = None,
     ) -> AudioClassificationResponse:
