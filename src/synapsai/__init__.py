@@ -9,7 +9,7 @@ from .client import SynapsAI, AsyncSynapsAI, DEFAULT_UPLOAD_BASE_URL
 from .types import *
 from .resources import *
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 __all__ = [
     "SynapsAI",
     "AsyncSynapsAI",
