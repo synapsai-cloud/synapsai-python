@@ -5,13 +5,12 @@ A scalable and maintainable Python client library for interacting with SynapsAI 
 compatible with OpenAI API patterns.
 """
 
-from .client import SynapsAI, AsyncSynapsAI, DEFAULT_UPLOAD_BASE_URL
+from .client import SynapsAI, AsyncSynapsAI
 from .types import *
 from .resources import *
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 __all__ = [
     "SynapsAI",
     "AsyncSynapsAI",
-    "DEFAULT_UPLOAD_BASE_URL",
 ]
