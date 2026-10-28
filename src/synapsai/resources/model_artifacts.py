@@ -33,6 +33,9 @@ if TYPE_CHECKING:
 
 PathLike = Union[str, Path]
 ProgressCallback = Callable[[str, int, int], None]
+# Browser and CLI uploads share one R2 host. Four parts saturates a typical link
+# without opening more connections than the host will accept.
+_DIRECT_PART_CONCURRENCY = 4
 
 
 def _iter_upload_files(root: Path) -> List[Tuple[str, Path]]:
@@ -118,6 +121,46 @@ def _put_presigned(url: str, file_path: Path, offset: int, length: int, timeout)
     raise last_error
 
 
+def _upload_presigned_parts(plan: dict, file_path: Path, timeout) -> List[dict]:
+    """PUT every presigned part. Multipart parts run `_DIRECT_PART_CONCURRENCY` at a time."""
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    parts = list(plan.get("parts") or [])
+    multipart = plan.get("mode") == "multipart"
+
+    def _one(part: dict) -> Optional[dict]:
+        etag = _put_presigned(
+            part["url"],
+            file_path,
+            int(part.get("offset") or 0),
+            int(part.get("size_bytes") or 0),
+            timeout,
+        )
+        if not multipart:
+            return None
+        return {"part_number": part["part_number"], "etag": etag}
+
+    if len(parts) <= 1:
+        collected = [item for item in (_one(part) for part in parts) if item is not None]
+        return collected
+
+    results: List[dict] = []
+    workers = min(_DIRECT_PART_CONCURRENCY, len(parts))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(_one, part) for part in parts]
+        try:
+            for future in as_completed(futures):
+                item = future.result()
+                if item is not None:
+                    results.append(item)
+        except Exception:
+            for future in futures:
+                future.cancel()
+            raise
+    results.sort(key=lambda item: int(item["part_number"]))
+    return results
+
+
 class ModelArtifactsResource:
     """Upload files into an existing model artifact on the client API host."""
 
@@ -177,18 +220,8 @@ class ModelArtifactsResource:
             json_data={"path": path, "size_bytes": size},
         )
         plan = response.json()
-        parts_out: List[dict] = []
         try:
-            for part in plan.get("parts") or []:
-                etag = _put_presigned(
-                    part["url"],
-                    file_path,
-                    int(part.get("offset") or 0),
-                    int(part.get("size_bytes") or 0),
-                    self._client.timeout,
-                )
-                if plan.get("mode") == "multipart":
-                    parts_out.append({"part_number": part["part_number"], "etag": etag})
+            parts_out = _upload_presigned_parts(plan, file_path, self._client.timeout)
             finished = self._client._post(
                 f"model-artifacts/{artifact_id}/uploads/{upload_id}/direct-uploads/complete",
                 json_data={"path": plan.get("path") or path, "parts": parts_out},
@@ -227,7 +260,8 @@ class ModelArtifactsResource:
         The session response selects the route. ``transfer=proxy`` is local
         disk on an on-prem deployment and uses ``PUT .../files``. Any other
         value, including ``direct``, writes presigned parts straight to the
-        bucket. One part is read from disk at a time.
+        bucket. Up to four multipart parts are in flight at once. Other files and other
+        upload sessions for the same artifact can be in progress at the same time.
         """
         root = Path(path).expanduser().resolve()
         files = _iter_upload_files(root)
@@ -310,19 +344,13 @@ class AsyncModelArtifactsResource:
             json_data={"path": path, "size_bytes": size},
         )
         plan = response.json()
-        parts_out: List[dict] = []
         try:
-            for part in plan.get("parts") or []:
-                etag = await asyncio.to_thread(
-                    _put_presigned,
-                    part["url"],
-                    file_path,
-                    int(part.get("offset") or 0),
-                    int(part.get("size_bytes") or 0),
-                    self._client.timeout,
-                )
-                if plan.get("mode") == "multipart":
-                    parts_out.append({"part_number": part["part_number"], "etag": etag})
+            parts_out = await asyncio.to_thread(
+                _upload_presigned_parts,
+                plan,
+                file_path,
+                self._client.timeout,
+            )
             finished = await self._client._post(
                 f"model-artifacts/{artifact_id}/uploads/{upload_id}/direct-uploads/complete",
                 json_data={"path": plan.get("path") or path, "parts": parts_out},
@@ -361,7 +389,8 @@ class AsyncModelArtifactsResource:
         The session response selects the route. ``transfer=proxy`` is local
         disk on an on-prem deployment and uses ``PUT .../files``. Any other
         value, including ``direct``, writes presigned parts straight to the
-        bucket. One part is read from disk at a time.
+        bucket. Up to four multipart parts are in flight at once. Other files and other
+        upload sessions for the same artifact can be in progress at the same time.
         """
         root = Path(path).expanduser().resolve()
         files = _iter_upload_files(root)
