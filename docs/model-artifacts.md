@@ -19,9 +19,23 @@ Your API key must include upload permission.
 | `create(display_name, pipeline)` | `POST /v1/model-artifacts` |
 | `retrieve(artifact_id)` | `GET /v1/model-artifacts/{id}` |
 | `start_upload(artifact_id)` | `POST /v1/model-artifacts/{id}/uploads` |
-| `upload_file(artifact_id, upload_id, path, file)` | `PUT …/uploads/{upload_id}/files?path=` |
+| `upload_file_direct(...)` | `POST …/direct-uploads`, presigned part `PUT`s, `POST …/direct-uploads/complete` |
+| `upload_file(...)` | `PUT …/uploads/{upload_id}/files?path=` (local storage only) |
 | `complete_upload(artifact_id, upload_id)` | `POST …/uploads/{upload_id}/complete` |
-| `upload(path, *, artifact_id)` | Convenience: start → files → complete |
+| `upload(path, *, artifact_id)` | Start, then the route selected by `transfer`, then complete |
+
+## Which upload route
+
+`start_upload` is the check. Its response includes `transfer`. `upload()` reads that field, so callers do not pass a flag.
+
+| `transfer` | When | Route |
+| --- | --- | --- |
+| `direct` | Default. Artifact storage is S3 or R2. | `upload_file_direct`. Parts go to the bucket. The weight file is not sent through the API. |
+| `proxy` | On-prem / BYOC with `MODEL_ARTIFACT_STORAGE=local`. | `upload_file`. The API writes each file onto the host disk. |
+
+Use `upload_file` only when `session.transfer == "proxy"`. On every other value, including a missing one, use `upload_file_direct`.
+
+Browser uploads read the same field. For `direct`, the bucket CORS policy must allow `PUT` from the platform origin and expose `ETag`, which multipart completion needs. Local storage does not use that CORS policy; its bytes stay on `PUT …/files`.
 
 Artifacts are normally created in the SynapsAI console (or via `create`). File upload always targets an existing `artifact_id`.
 
@@ -52,18 +66,22 @@ Directory uploads preserve relative paths (`config.json`, `tokenizer/vocab.json`
 ```python
 session = client.model_artifacts.start_upload(artifact_id)
 
-client.model_artifacts.upload_file(
-    artifact_id,
-    session.upload_id,
-    path="model.safetensors",
-    file="./model.safetensors",
-)
-client.model_artifacts.upload_file(
-    artifact_id,
-    session.upload_id,
-    path="config.json",
-    file="./config.json",
-)
+if session.transfer == "proxy":
+    # Local disk on an on-prem deployment.
+    client.model_artifacts.upload_file(
+        artifact_id,
+        session.upload_id,
+        path="model.safetensors",
+        file="./model.safetensors",
+    )
+else:
+    # Default: straight to the bucket.
+    client.model_artifacts.upload_file_direct(
+        artifact_id,
+        session.upload_id,
+        path="model.safetensors",
+        file="./model.safetensors",
+    )
 
 result = client.model_artifacts.complete_upload(artifact_id, session.upload_id)
 print(result.artifact.status)

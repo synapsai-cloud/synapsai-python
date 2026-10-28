@@ -22,11 +22,14 @@ A host may be a hostname or a full URL. The CLI normalizes it to `https://…/v1
 
 Upload a **file or directory** into an **existing** model artifact.
 
-Flow (matches the upload API):
+The first request, `POST /v1/model-artifacts/{id}/uploads`, returns `transfer`. The CLI follows that field. There is no storage flag.
 
-1. `POST /v1/model-artifacts/{id}/uploads`
-2. `PUT /v1/model-artifacts/{id}/uploads/{upload_id}/files?path=…` per file
-3. `POST /v1/model-artifacts/{id}/uploads/{upload_id}/complete`
+| `transfer` | Deployment | Where the file bytes go |
+| --- | --- | --- |
+| `direct` (default) | S3 or R2 | Presigned parts straight to the bucket: `POST …/direct-uploads`, then `PUT` each part to object storage, then `POST …/direct-uploads/complete` |
+| `proxy` | Local disk, on-prem / BYOC | `PUT /v1/model-artifacts/{id}/uploads/{upload_id}/files?path=…` on the API |
+
+Both paths finish with `POST …/uploads/{upload_id}/complete`.
 
 ```bash
 synapsai upload-model ./my-model --artifact-id artifact-demo-abc12345

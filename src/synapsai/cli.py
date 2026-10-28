@@ -70,7 +70,11 @@ def upload_model(
     """Upload model files into an existing artifact on the API.
 
     PATH may be a single file or a directory of model weights/config files.
-    Starts an upload session, streams files, then completes ingest.
+    Starts an upload session, sends files, then completes ingest.
+    The session response selects the route. Bucket storage is the default:
+    parts are written straight to object storage. On-prem deployments that
+    store artifacts on local disk return ``transfer=proxy``, and those bytes
+    use ``PUT .../files`` on the API instead. There is no flag for this.
     Uses the same host as the rest of the API (``SYNAPSAI_API_BASE`` or
     ``https://api.synapsai.cloud/v1``).
     """

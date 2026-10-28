@@ -52,6 +52,7 @@ class ModelArtifactUploadSession(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     upload_id: str
+    transfer: Optional[str] = None
     message: Optional[str] = None
     artifact: Optional[ModelArtifact] = None
 
